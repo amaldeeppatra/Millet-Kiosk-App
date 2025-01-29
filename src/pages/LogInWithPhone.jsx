@@ -3,7 +3,7 @@ import { FaChevronLeft } from "react-icons/fa6";
 
 const PhoneNumberPage = () => {
   return (
-    <div className="min-h-screen bg-[url('./assets/phoneInputBg.png')] bg-cover bg-center flex flex-col justify-between p-6">
+    <div className="min-h-screen bg-[url('./resources/login/phoneInputBg.png')] bg-cover bg-center flex flex-col justify-between p-6">
       {/* Back Icon */}
       <div className="flex items-start">
         <button className="text-brown-700 text-2xl">
