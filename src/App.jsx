@@ -7,6 +7,7 @@ import LogInWithPhone from './pages/LogInWithPhone'
 import { createBrowserRouter,Outlet,RouterProvider } from 'react-router-dom'
 import ReactDOM from 'react-dom/client'
 import LoginGoogle from './pages/LoginGoogle'
+import HomePage from './pages/HomePage'
 
 
 const App=()=>{
@@ -35,6 +36,10 @@ const appRouter = createBrowserRouter(
         {
           path:"/login-phone",
           element:[<LogInWithPhone/>]
+        },
+        {
+          path:"/homepage",
+          element:[<HomePage/>]
         }
       ]
     }
