@@ -3,7 +3,7 @@ import { CgProfile } from "react-icons/cg";
 import banner1 from '../resources/homepage/banner1.png';
 import banner2 from '../resources/homepage/ShaktiSaathi.png';
 // import missionshaktisupport from '../resources/homepage/missionshaktisupport.png';
-// import ProductsByCat from '../components/homepage/ProductsByCat';
+import ProductsByCat from '../components/homepage/ProductsByCat';
 // import Footer from '../components/homepage/Footer';
 
 const HomePage = () => {
@@ -157,6 +157,39 @@ const HomePage = () => {
         </div>
       </div>
 
+
+
+      {/* Offers Scrollable Carousel */}
+      <div className="mt-10 px-4">
+        {/* <h3 className="text-xl font-bold mb-4 text-white">Offers</h3> */}
+        <div className="flex space-x-4 overflow-x-auto pb-4 snap-x snap-mandatory">
+          {offers.map((offer) => (
+            <div 
+              key={offer.id} 
+              className="min-w-[220px] snap-start bg-[#291C08] rounded-3xl shadow-md pl-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-lg font-semibold text-white">{offer.title}</h4>
+                <img 
+                  src={offer.image} 
+                  alt={offer.title} 
+                  className="w-[7rem] h-28" 
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+
+      {/* Millet Specific Products Section */}
+      <ProductsByCat title="Millet Specific" />
+      <ProductsByCat title="Beverages" />
+      <ProductsByCat title="Baked Goods" />
+      <ProductsByCat title="Snacks" />
+
+
+
+      {/* Footer */}
 
     </div>
   );
