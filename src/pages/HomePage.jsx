@@ -5,6 +5,7 @@ import { FaChevronLeft } from "react-icons/fa6";
 import banner1 from '../resources/homepage/banner1.png';
 import banner2 from '../resources/homepage/ShaktiSaathi.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
+import Footer from '../components/footer/Footer';
 
 const HomePage = () => {
   // Carousel slides (for example)
@@ -254,7 +255,7 @@ const HomePage = () => {
       <ProductsByCat title="Snacks" />
 
       {/* Footer */}
-      {/* ... Your footer code here ... */}
+      <Footer/>
     </div>
   );
 };
