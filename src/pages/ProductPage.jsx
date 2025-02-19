@@ -63,6 +63,15 @@ const ProductPage = () => {
     <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center px-4 py-6">
       {/* write your code here */}
       {/* <h1>{product[0].prodName}</h1>   example of displaying fetched data */}
+      <button onClick={() => navigate(-1)} className="mb-4">
+        <FaChevronLeft /> Back
+      </button>
+      <h1 className="text-3xl font-bold mb-4">{product[0].prodName}</h1>
+      <img src={product[0].prodImg} alt={product[0].prodName} className="mb-4"/>
+      <p className="text-lg mb-2">{product[0].prodDesc}</p>
+      <p className="text-lg mb-2">Rating: {product[0].rating}</p>
+      <p className="text-lg mb-2">Price: Rs.{product[0].price}</p>
+    
       
     </div>
   );
