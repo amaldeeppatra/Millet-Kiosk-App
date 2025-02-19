@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaChevronLeft } from 'react-icons/fa';
+import { FaChevronLeft, FaStar } from 'react-icons/fa'; 
 
 const ProductPage = () => {
   const params = useParams();
@@ -66,13 +66,22 @@ const ProductPage = () => {
       <button onClick={() => navigate(-1)} className="mb-4">
         <FaChevronLeft /> Back
       </button>
-      <h1 className="text-3xl font-bold mb-4">{product[0].prodName}</h1>
       <img src={product[0].prodImg} alt={product[0].prodName} className="mb-4"/>
-      <p className="text-lg mb-2">{product[0].prodDesc}</p>
-      <p className="text-lg mb-2">Rating: {product[0].rating}</p>
-      <p className="text-lg mb-2">Price: Rs.{product[0].price}</p>
-    
-      
+      <h1 className="text-3xl font-bold mb-4">{product[0].prodName}</h1>
+      <p className="text-lg mb-2">{product[0].prodDesc}</p> 
+      <div className="flex justify-between items-center mb-2">
+      <p className="text-lg">Price: Rs.{product[0].price}</p>
+      <div className="flex flex-col items-end">
+          <div className="flex items-center px-2 py-1 bg-brown-500 text-white rounded">
+            <FaStar className="text-yellow-500 mr-1" />
+            <p className="text-lg">{product[0].rating}</p>
+          </div>
+          <button className="mt-2 px-4 py-2 bg-brown-500 text-white rounded">
+            ADD
+          </button>
+        </div>
+      </div>
+  
     </div>
   );
 };
