@@ -1,48 +1,53 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CgProfile } from "react-icons/cg";
+import { FaChevronLeft } from "react-icons/fa6";
 import banner1 from '../resources/homepage/banner1.png';
 import banner2 from '../resources/homepage/ShaktiSaathi.png';
-// import missionshaktisupport from '../resources/homepage/missionshaktisupport.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
-// import Footer from '../components/homepage/Footer';
 
 const HomePage = () => {
-  // Main carousel slides
+  // Carousel slides (for example)
   const slides = [
     { image: banner1, alt: 'Banner 1', title: 'Welcome to Millet Hub Cafe', subtitle: '' },
     { image: banner2, alt: 'Banner 2', title: 'Title for Banner 2', subtitle: 'Subtitle for Banner 2' },
-    { image: banner1, alt: 'Banner 3', title: 'Title for Banner 3', subtitle: 'Subtitle for Banner 3' },
   ];
 
-  // Products for the "Millet Specific" section – note the added "image" property
+  // Sample offers
   const offers = [
     { id: 1, title: "Order Now!!!", image: banner1 },
     { id: 2, title: "Flat ₹50 Off", image: banner2 },
-    { id: 3, title: "15% Discount", image: banner1 }
   ];
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  // Automatic carousel slide change every 3 seconds
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [slides.length]);
+  // <-- NEW: track user input
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Close hamburger menu if click occurs outside its area
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  // React Router hook for navigation
+  const navigate = useNavigate();
+
+  // Dummy data for recent and popular searches
+  const recentSearches = ["Samosa", "Jalebi", "Cupcakes"];
+  const popularSearches = ["Samosa", "Cupcakes", "Jalebi"];
+
+  // Function to handle search
+  const handleSearch = () => {
+    // If there's something typed, navigate to /search?query=...
+    if (searchTerm.trim() !== "") {
+      navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+      setSearchOpen(false);  // Close the overlay
+    }
+  };
+
+  // If you also want to automatically navigate when pressing Enter:
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   return (
     <div className="relative min-h-screen bg-no-repeat bg-cover bg-center bg-[url('./resources/homepage/Homepage.png')]">
@@ -50,7 +55,7 @@ const HomePage = () => {
       <header className="bg-opacity-90 p-4 relative z-50">
         <nav className="flex items-center justify-between relative">
           {/* Hamburger Menu */}
-          <div className="relative" ref={menuRef}>
+          <div className="relative">
             <button 
               onClick={() => setMenuOpen(!menuOpen)} 
               className="flex flex-col space-y-1 focus:outline-none bg-[#291C08] p-2 rounded-md z-50 relative"
@@ -59,27 +64,17 @@ const HomePage = () => {
               <span className="block w-4 h-0.5 bg-white"></span>
               <span className="block w-4 h-0.5 bg-white"></span>
             </button>
-
-            {/* Dropdown Menu (Glassmorphism) */}
+            {/* Dropdown Menu Example */}
             {menuOpen && (
-              <div className="absolute top-12 left-0 w-48 bg-white/30 backdrop-blur-lg border border-white/40 rounded-lg shadow-lg z-50 animate-fade-in">
+              <div className="absolute top-12 left-0 w-48 bg-white/30 backdrop-blur-lg border border-white/40 rounded-lg shadow-lg z-50">
                 <ul className="text-black text-sm">
-                  <li 
-                    className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-t-lg transition-all"
-                    onClick={() => alert('Go to Profile')}
-                  >
+                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-t-lg transition-all">
                     My Profile
                   </li>
-                  <li 
-                    className="px-4 py-2 hover:bg-white/50 cursor-pointer transition-all"
-                    onClick={() => alert('Go to Previous Orders')}
-                  >
+                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer transition-all">
                     Previous Orders
                   </li>
-                  <li 
-                    className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-b-lg transition-all"
-                    onClick={() => alert('Logging Out')}
-                  >
+                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-b-lg transition-all">
                     Logout
                   </li>
                 </ul>
@@ -87,11 +82,12 @@ const HomePage = () => {
             )}
           </div>
 
-          {/* Search Bar with Glassmorphism */}
+          {/* Search Bar */}
           <div className="flex-1 mx-4">
             <input
               type="text"
               placeholder="🔍"
+              onFocus={() => setSearchOpen(true)}
               className="
                 w-full px-3 py-1 
                 bg-white/30 backdrop-blur-md border border-white/40 
@@ -116,6 +112,79 @@ const HomePage = () => {
           </div>
         </nav>
       </header>
+
+      {/* Search Overlay (Full Screen) */}
+      {searchOpen && (
+        <div 
+          className="fixed inset-0 z-[999] flex flex-col bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center"
+          style={{ backgroundColor: '#F8EDD6' }} // Fallback background color
+        >
+          {/* Top Bar with Search Input */}
+          <div className="flex items-center p-4">
+            <button 
+              onClick={() => setSearchOpen(false)}
+              className="text-xl font-semibold mr-2"
+            >
+              <FaChevronLeft />
+            </button>
+            <input
+              type="text"
+              placeholder="Search..."
+              autoFocus
+              value={searchTerm}               // bind state
+              onChange={(e) => setSearchTerm(e.target.value)}  // update state
+              onKeyDown={handleKeyDown}        // handle Enter key
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"
+            />
+            {/* Optional Search Button */}
+            <button 
+              onClick={handleSearch}
+              className="ml-2 bg-[#291C08] text-white px-4 py-2 rounded-full"
+            >
+              Search
+            </button>
+          </div>
+
+          {/* Body of the Search Screen */}
+          <div className="p-4 overflow-auto">
+            {/* Recent Searches */}
+            <h2 className="text-lg font-semibold mb-2">Recent Searches</h2>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {recentSearches.map((item, idx) => (
+                <span 
+                  key={idx} 
+                  className="px-3 py-1 rounded-full bg-[#291C08] text-white text-sm cursor-pointer"
+                  onClick={() => {
+                    setSearchTerm(item);
+                    navigate(`/search?query=${encodeURIComponent(item)}`);
+                    setSearchOpen(false);
+                  }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+
+            {/* Popular Searches */}
+            <h2 className="text-lg font-semibold mb-2">Popular Searches</h2>
+            <div className="flex flex-wrap gap-2">
+              {popularSearches.map((item, idx) => (
+                <span 
+                  key={idx} 
+                  className="px-3 py-1 rounded-full bg-[#291C08] text-white text-sm cursor-pointer"
+                  onClick={() => {
+                    setSearchTerm(item);
+                    navigate(`/search?query=${encodeURIComponent(item)}`);
+                    setSearchOpen(false);
+                  }}
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Carousel */}
       <div className="relative h-96 mt-[-65px] overflow-hidden z-0">
@@ -157,16 +226,14 @@ const HomePage = () => {
         </div>
       </div>
 
-
-
       {/* Offers Scrollable Carousel */}
       <div className="mt-10 px-4">
-        {/* <h3 className="text-xl font-bold mb-4 text-white">Offers</h3> */}
         <div className="flex space-x-4 overflow-x-auto pb-4 snap-x snap-mandatory">
           {offers.map((offer) => (
             <div 
               key={offer.id} 
-              className="min-w-[220px] snap-start bg-[#291C08] rounded-3xl shadow-md pl-4">
+              className="min-w-[220px] snap-start bg-[#291C08] rounded-3xl shadow-md pl-4"
+            >
               <div className="flex items-center justify-between">
                 <h4 className="text-lg font-semibold text-white">{offer.title}</h4>
                 <img 
@@ -180,17 +247,14 @@ const HomePage = () => {
         </div>
       </div>
 
-
       {/* Millet Specific Products Section */}
       <ProductsByCat title="Millet Specific" />
       <ProductsByCat title="Beverages" />
       <ProductsByCat title="Baked Goods" />
       <ProductsByCat title="Snacks" />
 
-
-
       {/* Footer */}
-
+      {/* ... Your footer code here ... */}
     </div>
   );
 };

@@ -12,3 +12,9 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+#root{
+  font-family: "Poppins", serif;
+  font-weight: 400;
+  font-style: normal;
+}

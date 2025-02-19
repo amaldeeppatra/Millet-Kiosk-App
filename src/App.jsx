@@ -8,6 +8,8 @@ import { createBrowserRouter,Outlet,RouterProvider } from 'react-router-dom'
 import ReactDOM from 'react-dom/client'
 import LoginGoogle from './pages/LoginGoogle'
 import HomePage from './pages/HomePage'
+import SearchResultsPage from './pages/SearchResultsPage'
+import ProductPage from './pages/ProductPage'
 
 
 const App=()=>{
@@ -40,6 +42,14 @@ const appRouter = createBrowserRouter(
         {
           path:"/homepage",
           element:[<HomePage/>]
+        },
+        {
+          path:"/search",
+          element:[<SearchResultsPage/>]
+        },
+        {
+          path: "/product/:prodId",
+          element: <ProductPage/>
         }
       ]
     }
