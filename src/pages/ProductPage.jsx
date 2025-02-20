@@ -64,7 +64,7 @@ const ProductPage = () => {
       {/* write your code here */}
       {/* <h1>{product[0].prodName}</h1>   example of displaying fetched data */}
       <button onClick={() => navigate(-1)} className="mb-4">
-        <FaChevronLeft /> Back
+        <FaChevronLeft />
       </button>
       <img src={product[0].prodImg} alt={product[0].prodName} className="mb-4"/>
       <h1 className="text-3xl font-bold mb-4">{product[0].prodName}</h1>
