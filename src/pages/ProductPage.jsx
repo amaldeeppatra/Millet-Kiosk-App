@@ -72,11 +72,11 @@ const ProductPage = () => {
       <div className="flex justify-between items-center mb-2">
       <p className="text-lg">Price: Rs.{product[0].price}</p>
       <div className="flex flex-col items-end">
-          <div className="flex items-center px-2 py-1 bg-brown-500 text-white rounded">
+          <div className="flex items-center px-2 py-1 bg-[#6A3A3A] text-white rounded">
             <FaStar className="text-yellow-500 mr-1" />
             <p className="text-lg">{product[0].rating}</p>
           </div>
-          <button className="mt-2 px-4 py-2 bg-brown-500 text-white rounded">
+          <button className="mt-2 px-4 py-2 bg-[#6A3A3A] text-white rounded">
             ADD
           </button>
         </div>
