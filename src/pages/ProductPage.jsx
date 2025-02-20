@@ -67,7 +67,7 @@ const ProductPage = () => {
   return (
     <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center px-4 py-6">
       <button onClick={() => navigate(-1)} className="mb-4">
-        <FaChevronLeft /> Back
+        <FaChevronLeft />
       </button>
       <img src={product[0].prodImg} alt={product[0].prodName} className="mb-4" />
       <h1 className="text-3xl font-bold mb-4">{product[0].prodName}</h1>

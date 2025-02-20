@@ -66,7 +66,7 @@ const SearchResultsPage = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"
+          className="w-3/4 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"
         />
         <button onClick={handleSearch} className="ml-2 bg-[#291C08] text-white px-4 py-2 rounded-full">
           Search

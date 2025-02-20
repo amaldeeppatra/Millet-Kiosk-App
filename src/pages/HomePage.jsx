@@ -135,7 +135,7 @@ const HomePage = () => {
               value={searchTerm}               // bind state
               onChange={(e) => setSearchTerm(e.target.value)}  // update state
               onKeyDown={handleKeyDown}        // handle Enter key
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"
+              className="w-3/4 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"
             />
             {/* Optional Search Button */}
             <button 
@@ -253,6 +253,10 @@ const HomePage = () => {
       <ProductsByCat title="Beverages" />
       <ProductsByCat title="Baked Goods" />
       <ProductsByCat title="Snacks" />
+
+
+      {/* misson shakti support code here */}
+      
 
       {/* Footer */}
       <Footer/>
