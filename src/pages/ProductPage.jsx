@@ -6,7 +6,6 @@ const ProductPage = () => {
   const params = useParams();
   let productId = params;
   productId = productId.prodId;
-//   console.log(productId);
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
@@ -16,6 +15,13 @@ const ProductPage = () => {
 
   const incrementQuantity = () => {
     setQuantity(quantity + 1);
+    localStorage.setItem(productId, quantity + 1);
+  };
+
+  const decrementQuantity = () => {
+    const newQuantity = quantity > 0 ? quantity - 1 : 0;
+    setQuantity(newQuantity);
+    localStorage.setItem(productId, newQuantity);
   };
 
   useEffect(() => {
@@ -28,7 +34,6 @@ const ProductPage = () => {
         return res.json();
       })
       .then((data) => {
-        // console.log(data);
         setProduct(data);
         setLoading(false);
         setError(null);
@@ -37,6 +42,11 @@ const ProductPage = () => {
         setError(err.message);
         setLoading(false);
       });
+
+    const savedQuantity = localStorage.getItem(productId);
+    if (savedQuantity) {
+      setQuantity(parseInt(savedQuantity, 10));
+    }
   }, [productId]);
 
   if (loading) {
@@ -80,8 +90,14 @@ const ProductPage = () => {
             <p className="text-lg">{product[0].rating}</p>
           </div>
           <div className="flex items-center mt-2">
-            <button onClick={incrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded">
-              {quantity === 0 ? 'ADD' : `- ${quantity} +`}
+            <button onClick={decrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded mx-1">
+              -
+            </button>
+            <span className="px-4 py-2 bg-[#6A3A3A] text-white rounded">
+              {quantity === 0 ? 'ADD' : quantity}
+            </span>
+            <button onClick={incrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded mx-1">
+              +
             </button>
           </div>
           {quantity > 0 ? (
