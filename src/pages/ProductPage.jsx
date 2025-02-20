@@ -76,7 +76,7 @@ const ProductPage = () => {
             <FaStar className="text-yellow-500 mr-1" />
             <p className="text-lg">{product[0].rating}</p>
           </div>
-          <button className="mt-2 px-4 py-2 bg-brown-500 text-white rounded">
+          <button className="mt-2 px-4 py-2 bg-[#6A3A3A] text-white rounded">
             ADD
           </button>
         </div>
