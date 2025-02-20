@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaChevronLeft, FaStar } from 'react-icons/fa';
+import nutritionImg from '../resources/productpage/nutrition facts.png';
 
 const ProductPage = () => {
   const params = useParams();
-  let productId = params;
-  productId = productId.prodId;
+  let productId = params.prodId;
   const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
@@ -75,51 +75,87 @@ const ProductPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center px-4 py-6">
-      <button onClick={() => navigate(-1)} className="mb-4">
-        <FaChevronLeft />
-      </button>
-      <img src={product[0].prodImg} alt={product[0].prodName} className="mb-4" />
-      <h1 className="text-3xl font-bold mb-4">{product[0].prodName}</h1>
-      <p className="text-lg mb-2">{product[0].prodDesc}</p>
-      <div className="flex justify-between items-center mb-2">
-        <p className="text-lg">Price: Rs.{product[0].price}</p>
-        <div className="flex flex-col items-end">
-          <div className="flex items-center px-2 py-1 bg-[#6A3A3A] text-white rounded">
-            <FaStar className="text-yellow-500 mr-1" />
-            <p className="text-lg">{product[0].rating}</p>
-          </div>
-          <div className="flex items-center mt-2">
-            {quantity === 0 ? (
-              <button
-                onClick={incrementQuantity}
-                className="px-8 py-2 bg-[#6A3A3A] text-white rounded mx-1"
-              >
-                ADD
-              </button>
-            ) : (
-              <>
-                <button onClick={decrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded mx-1">
-                  -
+    <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center">
+      {/* Product Image Container */}
+      <div className="relative">
+        <img 
+          src={product[0].prodImg} 
+          alt={product[0].prodName} 
+          className="w-full object-cover rounded-b-[50px]"
+        />
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 p-2 bg-white bg-opacity-75 rounded-full shadow-md"
+        >
+          <FaChevronLeft className="text-[#6A3A3A]" />
+        </button>
+      </div>
+
+      {/* Product Details */}
+      <div className="px-4 py-6">
+        <h1 className="text-3xl text-[#6A3A3A] font-bold mb-4">{product[0].prodName}</h1>
+        <p className="text-lg mb-4">{product[0].prodDesc}</p>
+        
+        {/* Price, Rating and Add Button Row */}
+        <div className="flex justify-between items-center mb-6">
+          {/* Left side - Price */}
+          <p className="text-lg text-[#6A3A3A] font-semibold">
+            Price: Rs.{product[0].price}
+          </p>
+          
+          {/* Right side - Rating and Add/Quantity */}
+          <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center px-5 py-1 bg-[#6A3A3A] text-white rounded-[20px]">
+              <FaStar className="text-yellow-500 mr-1" />
+              <p className="text-lg font-semibold">{product[0].rating}</p>
+            </div>
+            
+            {/* Quantity Controls */}
+            <div className="flex items-center">
+              {quantity === 0 ? (
+                <button
+                  onClick={incrementQuantity}
+                  className="px-8 py-2 bg-[#6A3A3A] text-white font-bold rounded-[20px]"
+                >
+                  ADD
                 </button>
-                <span className="px-4 py-2 bg-[#6A3A3A] text-white rounded">
-                  {quantity}
-                </span>
-                <button onClick={incrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded mx-1">
-                  +
-                </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <button
+                    onClick={decrementQuantity}
+                    className="px-4 py-2 bg-[#6A3A3A] text-white rounded-full mx-1"
+                  >
+                    -
+                  </button>
+                  <span className="px-5 py-2 bg-[#6A3A3A] text-white rounded-full">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={incrementQuantity}
+                    className="px-4 py-2 bg-[#6A3A3A] text-white rounded-full mx-1"
+                  >
+                    +
+                  </button>
+                </>
+              )}
+            </div>
           </div>
-          {quantity > 0 ? (
-            <button className="px-4 py-2 bg-[#6A3A3A] text-white rounded absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              Go to Cart
-            </button>
-          ) : (
-            <button className="px-4 py-2 bg-[#6A3A3A] text-white rounded absolute bottom-4 left-1/2 transform -translate-x-1/2">
-              Show the Cart
-            </button>
-          )}
+        </div>
+        
+        {/* Centered Nutrition Image */}
+        <div className="w-full flex justify-center mb-6">
+          <img 
+            src={nutritionImg} 
+            alt="Nutrition Facts" 
+            className="max-w-full"
+          />
+        </div>
+        
+        {/* Cart Button - Centered */}
+        <div className="flex justify-center">
+          <button className="px-8 py-2 bg-[#6A3A3A] text-white rounded">
+            {quantity > 0 ? "Go to Cart" : "Show the Cart"}
+          </button>
         </div>
       </div>
     </div>
