@@ -90,15 +90,26 @@ const ProductPage = () => {
             <p className="text-lg">{product[0].rating}</p>
           </div>
           <div className="flex items-center mt-2">
-            <button onClick={decrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded mx-1">
-              -
-            </button>
-            <span className="px-4 py-2 bg-[#6A3A3A] text-white rounded">
-              {quantity === 0 ? 'ADD' : quantity}
-            </span>
-            <button onClick={incrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded mx-1">
-              +
-            </button>
+            {quantity === 0 ? (
+              <button
+                onClick={incrementQuantity}
+                className="px-8 py-2 bg-[#6A3A3A] text-white rounded mx-1"
+              >
+                ADD
+              </button>
+            ) : (
+              <>
+                <button onClick={decrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded mx-1">
+                  -
+                </button>
+                <span className="px-4 py-2 bg-[#6A3A3A] text-white rounded">
+                  {quantity}
+                </span>
+                <button onClick={incrementQuantity} className="px-4 py-2 bg-[#6A3A3A] text-white rounded mx-1">
+                  +
+                </button>
+              </>
+            )}
           </div>
           {quantity > 0 ? (
             <button className="px-4 py-2 bg-[#6A3A3A] text-white rounded absolute bottom-4 left-1/2 transform -translate-x-1/2">
