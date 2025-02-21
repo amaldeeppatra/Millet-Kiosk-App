@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaChevronLeft, FaInfoCircle } from 'react-icons/fa';
-import notFound from '../resources/searchpage/Group 50.png'
+import axios from 'axios';
+import notFound from '../resources/searchpage/Group 50.png';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
@@ -20,24 +22,21 @@ const SearchResultsPage = () => {
       return;
     }
 
-    setLoading(true);
-    fetch(`https://millet-kiosk-app-backend.onrender.com/search?query=${encodeURIComponent(query)}`)
-      .then((res) => {
-        const contentType = res.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Response is not JSON");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setResults(data);
+    const fetchSearchResults = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `${API_URL}/search?query=${encodeURIComponent(query)}`
+        );
+        setResults(response.data);
         setLoading(false);
-        setError(null);
-      })
-      .catch((err) => {
-        setError(err.message);
+      } catch (err) {
+        setError(err.message || 'An error occurred while fetching search results');
         setLoading(false);
-      });
+      }
+    };
+
+    fetchSearchResults();
   }, [query]);
 
   const handleSearch = () => {
@@ -93,10 +92,9 @@ const SearchResultsPage = () => {
         <div className="px-4 py-6">
           <h1 className="text-2xl font-bold mb-4">Matches</h1>
           {results.length === 0 ? (
-            // <p>No results found for <strong>{query}</strong>.</p>
             <div className="flex flex-col items-center justify-center">
               <img 
-                src={notFound}  // Change this to the correct path of your image
+                src={notFound}
                 alt="No results found"
                 className=""
               />
@@ -125,7 +123,6 @@ const SearchResultsPage = () => {
           )}
         </div>
       )}
-
     </div>
   );
 };

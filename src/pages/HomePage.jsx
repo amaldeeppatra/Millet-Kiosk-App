@@ -249,10 +249,10 @@ const HomePage = () => {
       </div>
 
       {/* Millet Specific Products Section */}
-      <ProductsByCat title="Millet Specific" />
-      <ProductsByCat title="Beverages" />
-      <ProductsByCat title="Baked Goods" />
-      <ProductsByCat title="Snacks" />
+      <ProductsByCat title="Millet Specific" cat="Millet"/>
+      <ProductsByCat title="Beverages" cat="Beverage"/>
+      <ProductsByCat title="Snacks" cat="Snacks"/>
+      <ProductsByCat title="Baked Goods" cat="Baked"/>
 
 
       {/* misson shakti support code here */}

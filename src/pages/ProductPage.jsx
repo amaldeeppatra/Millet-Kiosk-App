@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaChevronLeft, FaStar } from 'react-icons/fa';
+import axios from 'axios';
 import nutritionImg from '../resources/productpage/nutrition facts.png';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ProductPage = () => {
   const params = useParams();
@@ -25,23 +27,18 @@ const ProductPage = () => {
   };
 
   useEffect(() => {
-    fetch(`https://millet-kiosk-app-backend.onrender.com/products/id/${productId}`)
-      .then((res) => {
-        const contentType = res.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-          throw new Error('Response is not JSON');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setProduct(data);
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/products/id/${productId}`);
+        setProduct(response.data);
         setLoading(false);
-        setError(null);
-      })
-      .catch((err) => {
-        setError(err.message);
+      } catch (err) {
+        setError(err.message || 'An error occurred while fetching product data');
         setLoading(false);
-      });
+      }
+    };
+
+    fetchProduct();
 
     const savedQuantity = localStorage.getItem(productId);
     if (savedQuantity) {
