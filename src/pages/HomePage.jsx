@@ -1,14 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CgProfile } from "react-icons/cg";
 import { FaChevronLeft } from "react-icons/fa6";
+import Skeleton from '@mui/material/Skeleton';
 import banner1 from '../resources/homepage/banner1.png';
 import banner2 from '../resources/homepage/ShaktiSaathi.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
 import Footer from '../components/footer/Footer';
 
 const HomePage = () => {
-  // Carousel slides (for example)
+  // Simulate loading state (for example, waiting for data to load)
+  const [loading, setLoading] = useState(true);
+
+  // Simulate data fetching delay (2 seconds in this example)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Carousel slides
   const slides = [
     { image: banner1, alt: 'Banner 1', title: 'Welcome to Millet Hub Cafe', subtitle: '' },
     { image: banner2, alt: 'Banner 2', title: 'Title for Banner 2', subtitle: 'Subtitle for Banner 2' },
@@ -23,32 +35,45 @@ const HomePage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-
-  // <-- NEW: track user input
   const [searchTerm, setSearchTerm] = useState("");
-
-  // React Router hook for navigation
   const navigate = useNavigate();
 
-  // Dummy data for recent and popular searches
   const recentSearches = ["Samosa", "Jalebi", "Cupcakes"];
   const popularSearches = ["Samosa", "Cupcakes", "Jalebi"];
 
-  // Function to handle search
   const handleSearch = () => {
-    // If there's something typed, navigate to /search?query=...
     if (searchTerm.trim() !== "") {
       navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
-      setSearchOpen(false);  // Close the overlay
+      setSearchOpen(false);
     }
   };
 
-  // If you also want to automatically navigate when pressing Enter:
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [slides.length]);
+  
+
+  // Render Skeletons if loading is true
+  if (loading) {
+    return (
+      <div className="min-h-screen p-4 space-y-4">
+        <Skeleton variant="rectangular" width="100%" height={200} />
+        <Skeleton variant="text" width="60%" />
+        <Skeleton variant="rectangular" width="100%" height={400} />
+        <Skeleton variant="text" width="80%" />
+        <Skeleton variant="rectangular" width="100%" height={300} />
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen bg-no-repeat bg-cover bg-center bg-[url('./resources/homepage/Homepage.png')]">
@@ -65,7 +90,6 @@ const HomePage = () => {
               <span className="block w-4 h-0.5 bg-white"></span>
               <span className="block w-4 h-0.5 bg-white"></span>
             </button>
-            {/* Dropdown Menu Example */}
             {menuOpen && (
               <div className="absolute top-12 left-0 w-48 bg-white/30 backdrop-blur-lg border border-white/40 rounded-lg shadow-lg z-50">
                 <ul className="text-black text-sm">
@@ -89,13 +113,7 @@ const HomePage = () => {
               type="text"
               placeholder="🔍"
               onFocus={() => setSearchOpen(true)}
-              className="
-                w-full px-3 py-1 
-                bg-white/30 backdrop-blur-md border border-white/40 
-                text-black placeholder-black 
-                rounded-[70px]
-                focus:outline-none focus:ring-2 focus:ring-[#291C08]
-              "
+              className="w-full px-3 py-1 bg-white/30 backdrop-blur-md border border-white/40 text-black placeholder-black rounded-[70px] focus:outline-none focus:ring-2 focus:ring-[#291C08]"
             />
           </div>
 
@@ -114,13 +132,12 @@ const HomePage = () => {
         </nav>
       </header>
 
-      {/* Search Overlay (Full Screen) */}
+      {/* Search Overlay */}
       {searchOpen && (
         <div 
           className="fixed inset-0 z-[999] flex flex-col bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center"
-          style={{ backgroundColor: '#F8EDD6' }} // Fallback background color
+          style={{ backgroundColor: '#F8EDD6' }}
         >
-          {/* Top Bar with Search Input */}
           <div className="flex items-center p-4">
             <button 
               onClick={() => setSearchOpen(false)}
@@ -132,12 +149,11 @@ const HomePage = () => {
               type="text"
               placeholder="Search..."
               autoFocus
-              value={searchTerm}               // bind state
-              onChange={(e) => setSearchTerm(e.target.value)}  // update state
-              onKeyDown={handleKeyDown}        // handle Enter key
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="w-3/4 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"
             />
-            {/* Optional Search Button */}
             <button 
               onClick={handleSearch}
               className="ml-2 bg-[#291C08] text-white px-4 py-2 rounded-full"
@@ -145,10 +161,7 @@ const HomePage = () => {
               Search
             </button>
           </div>
-
-          {/* Body of the Search Screen */}
           <div className="p-4 overflow-auto">
-            {/* Recent Searches */}
             <h2 className="text-lg font-semibold mb-2">Recent Searches</h2>
             <div className="flex flex-wrap gap-2 mb-4">
               {recentSearches.map((item, idx) => (
@@ -165,8 +178,6 @@ const HomePage = () => {
                 </span>
               ))}
             </div>
-
-            {/* Popular Searches */}
             <h2 className="text-lg font-semibold mb-2">Popular Searches</h2>
             <div className="flex flex-wrap gap-2">
               {popularSearches.map((item, idx) => (
@@ -199,11 +210,7 @@ const HomePage = () => {
             aria-label={slide.alt}
           />
         ))}
-
-        {/* Dark Overlay */}
         <div className="absolute inset-0 bg-[#666666] opacity-50 z-5 rounded-b-[50px]"></div>
-
-        {/* Dots (Carousel Indicators) */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
           {slides.map((_, dotIndex) => (
             <span
@@ -215,8 +222,6 @@ const HomePage = () => {
             />
           ))}
         </div>
-
-        {/* Dynamic Text on the Bottom Left */}
         <div className="absolute bottom-10 left-4 z-10">
           <h2 className="text-white text-[2rem] font-bold drop-shadow-lg">
             {slides[currentSlide].title}
@@ -248,16 +253,12 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Millet Specific Products Section */}
+      {/* Products Sections */}
       <ProductsByCat title="Millet Specific" cat="Millet"/>
       <ProductsByCat title="Beverages" cat="Beverage"/>
       <ProductsByCat title="Snacks" cat="Snacks"/>
       <ProductsByCat title="Dessert" cat="Dessert"/>
       <ProductsByCat title="Fast Food" cat="Fast Food"/>
-
-
-      {/* misson shakti support code here */}
-      
 
       {/* Footer */}
       <Footer/>

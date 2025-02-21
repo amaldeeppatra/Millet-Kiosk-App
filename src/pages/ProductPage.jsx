@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaChevronLeft, FaStar } from 'react-icons/fa';
 import axios from 'axios';
+import Skeleton from '@mui/material/Skeleton';
 import nutritionImg from '../resources/productpage/nutrition facts.png';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -48,8 +49,26 @@ const ProductPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-xl">Loading...</p>
+      <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center p-4">
+        {/* Skeleton for the product image */}
+        <Skeleton variant="rectangular" width="100%" height={400} className="rounded-b-[50px]" />
+        <div className="px-4 py-6">
+          {/* Skeleton for product name */}
+          <Skeleton variant="text" width="70%" height={40} />
+          {/* Skeleton for product description */}
+          <Skeleton variant="text" width="90%" height={30} />
+          {/* Skeleton for the Price and Rating row */}
+          <div className="flex justify-between items-center my-4">
+            <Skeleton variant="text" width="30%" height={30} />
+            <Skeleton variant="rectangular" width="30%" height={40} />
+          </div>
+          {/* Skeleton for the Nutrition Facts image */}
+          <Skeleton variant="rectangular" width="100%" height={200} />
+          {/* Skeleton for the Cart button */}
+          <div className="flex justify-center mt-4">
+            <Skeleton variant="rectangular" width="50%" height={40} />
+          </div>
+        </div>
       </div>
     );
   }

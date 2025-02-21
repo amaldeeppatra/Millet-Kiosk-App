@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logo from '../resources/logos/ShaktiSaathi.png';
 import bgPattern from '../resources/login/login bg grey.png';
+import CircularIndeterminate from '../components/atoms/CircularIndeterminate';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const LoginGoogle = () => {
@@ -37,7 +38,14 @@ const LoginGoogle = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  // if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularIndeterminate />
+      </div>
+    );
+  
 
   return (
     <div className="relative h-screen w-screen overflow-hidden flex flex-col items-center">

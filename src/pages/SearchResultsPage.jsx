@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaChevronLeft, FaInfoCircle } from 'react-icons/fa';
 import axios from 'axios';
+import Skeleton from '@mui/material/Skeleton';
 import notFound from '../resources/searchpage/Group 50.png';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -72,10 +73,13 @@ const SearchResultsPage = () => {
         </button>
       </div>
 
-      {/* Loading State */}
+      {/* Loading State with Skeleton */}
       {loading && (
-        <div className="flex items-center justify-center min-h-screen">
-          <p className="text-xl">Loading...</p>
+        <div className="px-4 py-6 space-y-4">
+          <Skeleton variant="text" width="60%" height={40} />
+          {[...Array(3)].map((_, index) => (
+            <Skeleton key={index} variant="rectangular" width="100%" height={150} />
+          ))}
         </div>
       )}
 
@@ -98,7 +102,9 @@ const SearchResultsPage = () => {
                 alt="No results found"
                 className=""
               />
-              <p className="text-lg font-semibold mt-4">No results found for <strong>{query}</strong>. <br />Nice try diddy!!</p>
+              <p className="text-lg font-semibold mt-4">
+                No results found for <strong>{query}</strong>. <br />Nice try diddy!!
+              </p>
             </div>
           ) : (
             <div className="space-y-6">
