@@ -252,8 +252,8 @@ const HomePage = () => {
       <ProductsByCat title="Millet Specific" cat="Millet"/>
       <ProductsByCat title="Beverages" cat="Beverage"/>
       <ProductsByCat title="Snacks" cat="Snacks"/>
-      <ProductsByCat title="Baked Goods" cat="Dessert"/>
-      <ProductsByCat title="Baked Goods" cat="Fast Food"/>
+      <ProductsByCat title="Dessert" cat="Dessert"/>
+      <ProductsByCat title="Fast Food" cat="Fast Food"/>
 
 
       {/* misson shakti support code here */}
