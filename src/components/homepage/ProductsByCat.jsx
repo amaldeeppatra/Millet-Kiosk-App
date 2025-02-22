@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AiOutlinePlus } from "react-icons/ai";
 import axios from 'axios';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ProductsByCat = ({ title, cat }) => {
   const [products, setProducts] = useState([]);
@@ -10,7 +11,7 @@ const ProductsByCat = ({ title, cat }) => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`https://millet-kiosk-app-backend.onrender.com/products/cat/${cat}`);
+        const response = await axios.get(`${API_URL}/products/cat/${cat}`);
         setProducts(response.data);
         setLoading(false);
       } catch (err) {
@@ -42,7 +43,7 @@ const ProductsByCat = ({ title, cat }) => {
       {/* Products Scrollable Section */}
       <div className="flex flex-nowrap space-x-7 overflow-x-auto pb-4 scrollbar-hide">
         {products && products.length > 0 ? (
-          products.map((product) => (
+          products.slice(0, 5).map((product) => (
             <div key={product._id || product.prodId} className="flex-none w-[20%]">
               <div className="aspect-square rounded-[26px] overflow-hidden relative bg-gray-100">
                 <img
@@ -50,7 +51,6 @@ const ProductsByCat = ({ title, cat }) => {
                   alt={product.prodName}
                   className="w-full h-full object-cover"
                 />
-                {/* Plus Button for adding item to cart */}
                 <button className="absolute top-1 right-1 bg-white text-[#783A0D] text-3xl rounded-full border-4 border-[#783A0D] w-8 h-8 flex items-center justify-center">
                   <AiOutlinePlus />
                 </button>
