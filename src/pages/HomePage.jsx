@@ -11,7 +11,6 @@ import Footer from '../components/footer/Footer';
 const HomePage = () => {
   // Simulate loading state (for example, waiting for data to load)
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
 
   // Simulate data fetching delay (2 seconds in this example)
   useEffect(() => {
@@ -120,18 +119,15 @@ const HomePage = () => {
 
           {/* Profile Icon */}
           <div className="z-50">
-          {user && user.imageUrl ? (
-              <img
-                src={user.imageUrl}
-                alt="Profile"
-                className="w-8 h-8 rounded-full"
-              />
-            ) : (
-              // Fallback icon if user data is not available
-              <div className="w-8 h-8 bg-[#291C08] flex items-center justify-center rounded-full">
-                <span className="text-white text-lg">P</span>
-              </div>
-            )}
+            <CgProfile 
+              style={{ 
+                fontSize: '2rem', 
+                backgroundColor: '#291C08', 
+                color: 'white', 
+                borderRadius: '50px', 
+                padding: '2px' 
+              }} 
+            />
           </div>
         </nav>
       </header>
