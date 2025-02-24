@@ -5,7 +5,7 @@ import bgPattern from '../resources/login/Landing Page Pattern.png'
 const LandingPage = () => {
   return (
     <>
-    <div className='h-screen'>
+    <div className='h-[100dvh]'>
       <div className='bg-[#123B33] h-[66vh] w-screen rounded-b-[px] absolute z-10' style={{ backgroundColor: "#143826", clipPath: "ellipse(100% 90% at 50% 0%)" }}>
       </div>
       <img src={logo} alt="" className='absolute top-[48%] left-[4.5rem] size-64 z-10'/>
