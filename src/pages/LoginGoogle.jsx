@@ -48,13 +48,13 @@ const LoginGoogle = () => {
   
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden flex flex-col items-center">
+    <div className="overflow-hidden flex flex-col items-center">
       {/* Green curved background */}
       <div
         className="absolute top-0 w-full"
         style={{
           backgroundColor: "#143826",
-          height: "66vh",
+          height: "62vh",
           clipPath: "ellipse(100% 90% at 50% 0%)",
           zIndex: 10,
         }}
@@ -68,16 +68,16 @@ const LoginGoogle = () => {
       />
 
       {/* Logo - positioned in the middle of the green area */}
-      <div className="absolute z-10" style={{ top: "50vh" }}>
+      <div className="">
         <img
           src={logo}
           alt="ShaktiSaathi Logo"
-          className="w-40 md:w-48 lg:w-56 h-auto"
+          className="absolute left-1/2 transform -translate-x-[52%] size-64 top-52 z-10"
         />
       </div>
 
       {/* Login Card - centered with responsive width */}
-      <div className="relative z-20 mx-auto mt-auto mb-16 w-4/5 max-w-sm">
+      <div className="absolute left-1/2 transform -translate-x-[50%] top-[69%] z-20 mb-16 w-4/5 max-w-sm">
         <div className="bg-white rounded-3xl shadow-lg p-6">
           <h2 className="text-[#123B33] text-xl sm:text-2xl font-semibold mb-4">
             Sign In to your account
