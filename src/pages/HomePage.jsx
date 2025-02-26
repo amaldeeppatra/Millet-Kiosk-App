@@ -7,10 +7,62 @@ import banner1 from '../resources/homepage/banner1.png';
 import banner2 from '../resources/homepage/ShaktiSaathi.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
 import Footer from '../components/footer/Footer';
+import CartPane from '../components/homepage/CartPane';
 
 const HomePage = () => {
   // Simulate loading state (for example, waiting for data to load)
   const [loading, setLoading] = useState(true);
+
+  const [cartItems, setCartItems] = useState([]);
+
+  const getProductId = (product) => product._id || product.prodId;
+  const handleAddToCart = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) => {
+      const existing = prevItems.find(item => getProductId(item) === productId);
+      if (existing) {
+        return prevItems.map(item =>
+          getProductId(item) === productId 
+            ? { ...item, quantity: item.quantity + 1 } 
+            : item
+        );
+      } else {
+        return [...prevItems, { ...product, quantity: 1 }];
+      }
+    });
+  };
+  
+  const handleIncrease = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) =>
+      prevItems.map(item =>
+        getProductId(item) === productId 
+          ? { ...item, quantity: item.quantity + 1 } 
+          : item
+      )
+    );
+  };
+  
+  const handleDecrease = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) =>
+      prevItems
+        .map(item =>
+          getProductId(item) === productId 
+            ? { ...item, quantity: item.quantity - 1 } 
+            : item
+        )
+        .filter(item => item.quantity > 0)
+    );
+  };
+  
+  const handleRemove = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) =>
+      prevItems.filter(item => getProductId(item) !== productId)
+    );
+  };  
+
 
   // Simulate data fetching delay (2 seconds in this example)
   useEffect(() => {
@@ -60,7 +112,19 @@ const HomePage = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [slides.length]);
+
+
+  useEffect(() => {
+    const storedCart = localStorage.getItem('cartItems');
+    if (storedCart) {
+      setCartItems(JSON.parse(storedCart));
+    }
+  }, []);
   
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);  
+
 
   // Render Skeletons if loading is true
   if (loading) {
@@ -254,11 +318,19 @@ const HomePage = () => {
       </div>
 
       {/* Products Sections */}
-      <ProductsByCat title="Millet Specific" cat="Millet"/>
-      <ProductsByCat title="Beverages" cat="Beverage"/>
-      <ProductsByCat title="Snacks" cat="Snacks"/>
-      <ProductsByCat title="Dessert" cat="Dessert"/>
-      <ProductsByCat title="Fast Food" cat="Fast Food"/>
+      <ProductsByCat title="Millet Specific" cat="Millet" onAddToCart={handleAddToCart}/>
+      <ProductsByCat title="Beverages" cat="Beverage" onAddToCart={handleAddToCart}/>
+      <ProductsByCat title="Snacks" cat="Snacks" onAddToCart={handleAddToCart}/>
+      <ProductsByCat title="Dessert" cat="Dessert" onAddToCart={handleAddToCart}/>
+      <ProductsByCat title="Fast Food" cat="Fast Food" onAddToCart={handleAddToCart}/>
+
+      {/* Render the cart pane fixed at the bottom */}
+      <CartPane 
+        cartItems={cartItems} 
+        onIncrease={handleIncrease}
+        onDecrease={handleDecrease}
+        onRemove={handleRemove}
+      />
 
       {/* Footer */}
       <Footer/>
