@@ -7,6 +7,7 @@ import LoginGoogle from './pages/LoginGoogle'
 import HomePage from './pages/HomePage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import ProductPage from './pages/ProductPage'
+import CartPage from './pages/CartPage'
 
 
 const App=()=>{
@@ -47,6 +48,10 @@ const appRouter = createBrowserRouter(
         {
           path: "/product/:prodId",
           element: <ProductPage/>
+        },
+        {
+          path: "/cart",
+          element: <CartPage/>
         }
       ]
     }
