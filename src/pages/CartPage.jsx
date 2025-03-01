@@ -1,58 +1,83 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { IoArrowBack } from 'react-icons/io5'
 import { useNavigate } from 'react-router-dom'
 
 const CartPage = () => {
+  // Initialize cartItems from localStorage if available, otherwise use default items.
+  const [cartItems, setCartItems] = useState(() => {
+    const storedCart = localStorage.getItem('cartItems');
+    return storedCart 
+      ? JSON.parse(storedCart) 
+      : [
+        ];
+  });
+
+  // Save cartItems to localStorage whenever they change.
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
+
   const suggestedItems = [
     { id: 1, name: 'Ladoo', image: 'https://source.unsplash.com/100x100/?indian,sweet,ladoo' },
     { id: 2, name: 'Bagel', image: 'https://source.unsplash.com/100x100/?bagel' },
     { id: 3, name: 'Paratha', image: 'https://source.unsplash.com/100x100/?indian,paratha' },
-  ]
+  ];
 
-  const [cartItems, setCartItems] = useState([
-    { id: 1, name: 'Samosa', price: 15, quantity: 1 },
-    { id: 2, name: 'Koraput Coffee', price: 70, quantity: 1 },
-    { id: 3, name: 'Mattri', price: 30, quantity: 1 },
-  ])
-
-  const updateQuantity = (id, change) => {
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(0, item.quantity + change) }
+  const getProductId = (product) => product._id || product.prodId;
+  const handleIncrease = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) =>
+      prevItems.map(item =>
+        getProductId(item) === productId 
+          ? { ...item, quantity: item.quantity + 1 } 
           : item
-      ).filter(item => item.quantity > 0)
-    )
-  }
+      )
+    );
+  };
+  
+  const handleDecrease = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) =>
+      prevItems
+        .map(item =>
+          getProductId(item) === productId 
+            ? { ...item, quantity: item.quantity - 1 } 
+            : item
+        )
+        .filter(item => item.quantity > 0)
+    );
+  };
 
   const addSuggestedItem = (item) => {
     setCartItems(items => {
-      const existingItem = items.find(i => i.id === item.id)
+      const existingItem = items.find(i => i.id === item.id);
       if (existingItem) {
-        return items.map(i => 
+        return items.map(i =>
           i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        )
+        );
       }
-      return [...items, { ...item, quantity: 1, price: 15 }]
-    })
-  }
+      // Adjust the price as needed.
+      return [...items, { ...item, quantity: 1, price: 15 }];
+    });
+  };
 
-  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const navigate = useNavigate();
   const handleGoBack = () => {
-    // This would normally use navigate(-1), but we'll just log for now
     navigate(-1);
-    console.log('Going back...')
-    // If react-router-dom is added, uncomment: navigate(-1)
-  }
+  };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);  
 
   const clearCart = () => {
-    setCartItems([])
-  }
+    setCartItems([]);
+  };
 
   return (
-    <div className="min-h-screen bg-[#FDF5E6] p-5" style={{ width: '430px', margin: '0 auto' }}>
+    <div className="min-h-screen bg-[#FDF5E6] p-5">
       <div className="max-w-[430px] mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -96,29 +121,29 @@ const CartPage = () => {
             <div key={item.id} className="flex items-center justify-between bg-[#8B4513] rounded-[15px] p-3 mb-3 last:mb-0">
               <div className="flex items-center">
                 <img
-                  src={`https://source.unsplash.com/50x50/?${item.name.toLowerCase()},food`}
-                  alt={item.name}
+                  src={item.prodImg}
+                  alt={item.prodName}
                   className="w-14 h-14 rounded-[12px] object-cover mr-3"
                 />
-                <span className="font-medium text-white">{item.name}</span>
+                <span className="font-medium text-white">{item.prodName}</span>
               </div>
               <div className="flex items-center">
                 <div className="bg-white rounded-full px-2 py-1 flex items-center">
                   <button
-                    onClick={() => updateQuantity(item.id, -1)}
+                    onClick={() => handleDecrease(item)}
                     className="w-6 h-6 flex items-center justify-center text-[#8B4513] text-lg font-medium"
                   >
                     -
                   </button>
                   <span className="mx-2 font-medium text-[#8B4513]">{item.quantity}</span>
                   <button
-                    onClick={() => updateQuantity(item.id, 1)}
+                    onClick={() => handleIncrease(item)}
                     className="w-6 h-6 flex items-center justify-center text-[#8B4513] text-lg font-medium"
                   >
                     +
                   </button>
                 </div>
-                <span className="ml-4 font-medium text-white">₹{item.price}</span>
+                <span className="ml-4 font-medium text-white">₹{item.price * item.quantity}</span>
               </div>
             </div>
           ))}
@@ -135,7 +160,7 @@ const CartPage = () => {
               <div key={item.id} className="relative w-24 h-24">
                 <img
                   src={item.image}
-                  alt={item.name}
+                  alt={item.prodName}
                   className="w-full h-full rounded-[15px] object-cover"
                 />
                 <button 
@@ -155,8 +180,8 @@ const CartPage = () => {
           <div className="bg-[#8B4513] rounded-[20px] p-4 text-white">
             {cartItems.map(item => (
               <div key={item.id} className="flex justify-between mb-3 text-lg">
-                <span>{item.name}</span>
-                <span>₹{item.price}</span>
+                <span>{item.prodName}</span>
+                <span>₹{item.price * item.quantity}</span>
               </div>
             ))}
             <div className="border-t border-white mt-4 pt-4 flex justify-between font-bold text-xl">
@@ -167,7 +192,7 @@ const CartPage = () => {
         </div>
 
         {/* Place Order Button */}
-        <button className="w-full bg-[#8B4513] text-white py-4 rounded-[20px] text-lg font-semibold hover:bg-[#654321] mb-12">
+        <button className="w-full bg-[#8B4513] text-white py-4 rounded-[20px] text-lg font-semibold hover:bg-[#654321] mb-4">
           PLACE ORDER
         </button>
       </div>
@@ -175,4 +200,4 @@ const CartPage = () => {
   )
 }
 
-export default CartPage
+export default CartPage;
