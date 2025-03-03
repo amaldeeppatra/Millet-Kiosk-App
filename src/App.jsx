@@ -8,6 +8,7 @@ import HomePage from './pages/HomePage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import ProductPage from './pages/ProductPage'
 import CartPage from './pages/CartPage'
+import ProtectedRoute from './utils/ProtectedRoute'
 
 
 const App=()=>{
@@ -39,19 +40,35 @@ const appRouter = createBrowserRouter(
         },
         {
           path:"/homepage",
-          element:[<HomePage/>]
+          element:(
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          )
         },
         {
           path:"/search",
-          element:[<SearchResultsPage/>]
+          element:(
+            <ProtectedRoute>
+              <SearchResultsPage />
+            </ProtectedRoute>
+          )
         },
         {
           path: "/product/:prodId",
-          element: <ProductPage/>
+          element: (
+            <ProtectedRoute>
+              <ProductPage />
+            </ProtectedRoute>
+          )
         },
         {
           path: "/cart",
-          element: <CartPage/>
+          element: (
+            <ProtectedRoute>
+              <CartPage />
+            </ProtectedRoute>
+          )
         }
       ]
     }
