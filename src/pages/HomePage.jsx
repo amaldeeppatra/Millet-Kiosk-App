@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { CgProfile } from "react-icons/cg";
 import { FaChevronLeft } from "react-icons/fa6";
 import Skeleton from '@mui/material/Skeleton';
@@ -8,6 +9,7 @@ import banner2 from '../resources/homepage/ShaktiSaathi.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
 import Footer from '../components/footer/Footer';
 import CartPane from '../components/homepage/CartPane';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const HomePage = () => {
   // Simulate loading state (for example, waiting for data to load)
@@ -61,7 +63,25 @@ const HomePage = () => {
     setCartItems((prevItems) =>
       prevItems.filter(item => getProductId(item) !== productId)
     );
-  };  
+  };
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Check if the user is authenticated by calling the protected endpoint.
+    axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
+      .then(
+        response => {
+          console.log('User authenticated:', response.data);
+          navigate('/homepage');
+        }
+      )
+      .catch(error => {
+        console.error('User not authenticated:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [navigate]);
 
 
   // Simulate data fetching delay (2 seconds in this example)
@@ -88,7 +108,7 @@ const HomePage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const recentSearches = ["Samosa", "Jalebi", "Cupcakes"];
   const popularSearches = ["Samosa", "Cupcakes", "Jalebi"];

@@ -13,7 +13,7 @@ const LoginGoogle = () => {
 
   useEffect(() => {
     // Check if the user is authenticated by calling the protected endpoint.
-    axios.get(`${API_URL}/login/success`, { withCredentials: true })
+    axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
       .then(
         response => {
           console.log('User authenticated:', response.data);
