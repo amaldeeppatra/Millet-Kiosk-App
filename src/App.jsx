@@ -41,33 +41,33 @@ const appRouter = createBrowserRouter(
         {
           path:"/homepage",
           element:(
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <HomePage />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           )
         },
         {
           path:"/search",
           element:(
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <SearchResultsPage />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           )
         },
         {
           path: "/product/:prodId",
           element: (
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <ProductPage />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           )
         },
         {
           path: "/cart",
           element: (
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <CartPage />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           )
         }
       ]
