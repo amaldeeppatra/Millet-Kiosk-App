@@ -66,9 +66,9 @@ const appRouter = createBrowserRouter(
         {
           path: "/cart",
           element: (
-            // <ProtectedRoute>
+            <ProtectedRoute>
               <CartPage />
-            // </ProtectedRoute>
+            </ProtectedRoute>
           )
         },
         {

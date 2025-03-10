@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 
 const ProtectedRoute = ({ children }) => {
   // Check for the JWT cookie (assumed to be stored with the key 'jwt')
-  const token = Cookies.get('auth_token');
+  const token = Cookies.get('token');
   
   // If no token is found, redirect to the login page
   if (!token) {
