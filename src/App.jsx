@@ -9,6 +9,7 @@ import SearchResultsPage from './pages/SearchResultsPage'
 import ProductPage from './pages/ProductPage'
 import CartPage from './pages/CartPage'
 import ProtectedRoute from './utils/ProtectedRoute'
+import ProductsByCat from './pages/ProductsByCat'
 
 
 const App=()=>{
@@ -68,6 +69,12 @@ const appRouter = createBrowserRouter(
             // <ProtectedRoute>
               <CartPage />
             // </ProtectedRoute>
+          )
+        },
+        {
+          path: "/categories",
+          element: (
+            <ProductsByCat/>
           )
         }
       ]

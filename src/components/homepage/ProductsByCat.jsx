@@ -39,7 +39,7 @@ const ProductsByCat = ({ title, cat, onAddToCart }) => {
       <div className="flex items-center mb-4">
         <h3 className="text-2xl font-semibold text-[#783A0D] mr-4">{title}</h3>
         <div className="flex-grow border-b-2 border-[#783A0D]"></div>
-        <button className="ml-4 text-[#783A0D] font-semibold">See All</button>
+        <button className="ml-4 text-[#783A0D] font-semibold" onClick={() => navigate('/categories')}>See All</button>
       </div>
       <div className="flex flex-nowrap space-x-7 overflow-x-auto pb-4 scrollbar-hide">
         {products && products.length > 0 ? (
