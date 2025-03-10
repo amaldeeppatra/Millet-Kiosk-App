@@ -9,6 +9,7 @@ import banner2 from '../resources/homepage/ShaktiSaathi.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
 import Footer from '../components/footer/Footer';
 import CartPane from '../components/homepage/CartPane';
+import Cookies from 'js-cookie';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const HomePage = () => {
@@ -16,6 +17,9 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
 
   const [cartItems, setCartItems] = useState([]);
+
+  const token = Cookies.get('token');
+  console.log(token);
 
   const getProductId = (product) => product._id || product.prodId;
   const handleAddToCart = (product) => {
