@@ -7,13 +7,13 @@ const ProtectedRoute = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Replace with your actual API endpoint URL
     fetch(`${API_URL}/auth/verify`, {
       credentials: 'include', // ensures cookies are sent
     })
       .then((res) => res.json())
       .then((data) => {
-        setAuthenticated(data.authenticated);
+        // Use the "success" property from the response instead of "authenticated"
+        setAuthenticated(data.success);
         setLoading(false);
       })
       .catch((error) => {
