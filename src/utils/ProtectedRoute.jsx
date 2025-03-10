@@ -1,17 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const ProtectedRoute = ({ children }) => {
-  // Check for the JWT cookie (assumed to be stored with the key 'jwt')
-  const token = Cookies.get('token');
-  
-  // If no token is found, redirect to the login page
-  if (!token) {
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    // Replace with your actual API endpoint URL
+    fetch(`${API_URL}/auth/verify`, {
+      credentials: 'include', // ensures cookies are sent
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setAuthenticated(data.authenticated);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error verifying auth:', error);
+        setAuthenticated(false);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!authenticated) {
     return <Navigate to="/login" replace />;
   }
-  
-  // If token exists, render the children components (i.e. the protected page)
+
   return children;
 };
 
