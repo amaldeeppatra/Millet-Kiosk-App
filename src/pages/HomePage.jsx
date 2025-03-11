@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import { CgProfile } from "react-icons/cg";
 import { FaChevronLeft } from "react-icons/fa6";
 import Skeleton from '@mui/material/Skeleton';
@@ -9,19 +10,72 @@ import banner2 from '../resources/homepage/ShaktiSaathi.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
 import Footer from '../components/footer/Footer';
 import CartPane from '../components/homepage/CartPane';
-import Cookies from 'js-cookie';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const HomePage = () => {
-  // Simulate loading state (for example, waiting for data to load)
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Extract token from query parameters (if any) and store it in cookies
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const tokenFromUrl = queryParams.get('token');
+    if (tokenFromUrl) {
+      Cookies.set('token', tokenFromUrl, { secure: true, sameSite: 'none' });
+      // Remove the token from the URL to prevent it from lingering
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, navigate]);
 
+  // Now, retrieve the token from cookies
+  const token = Cookies.get('token');
+  console.log('Token:', token);
+
+  // State variables and other logic
+  const [loading, setLoading] = useState(true);
   const [cartItems, setCartItems] = useState([]);
 
-  const token = Cookies.get('token');
-  console.log(token);
+  // Check if the user is authenticated
+  useEffect(() => {
+    axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
+      .then(response => {
+        console.log('User authenticated:', response.data);
+        // Optionally, redirect if needed
+        // navigate('/homepage');
+      })
+      .catch(error => {
+        console.error('User not authenticated:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [navigate]);
 
+  // Simulate data fetching delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Retrieve cart items from localStorage
+  useEffect(() => {
+    const storedCart = localStorage.getItem('cartItems');
+    if (storedCart) {
+      setCartItems(JSON.parse(storedCart));
+    }
+  }, []);
+  
+  // Update localStorage whenever cartItems changes
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // Utility functions for cart operations
   const getProductId = (product) => product._id || product.prodId;
+  
   const handleAddToCart = (product) => {
     const productId = getProductId(product);
     setCartItems((prevItems) => {
@@ -69,50 +123,19 @@ const HomePage = () => {
     );
   };
 
-  const navigate = useNavigate();
-  useEffect(() => {
-    // Check if the user is authenticated by calling the protected endpoint.
-    axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
-      .then(
-        response => {
-          console.log('User authenticated:', response.data);
-          navigate('/homepage');
-        }
-      )
-      .catch(error => {
-        console.error('User not authenticated:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [navigate]);
-
-
-  // Simulate data fetching delay (2 seconds in this example)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Carousel slides
+  // Carousel slides and other UI state variables
   const slides = [
     { image: banner1, alt: 'Banner 1', title: 'Welcome to Millet Hub Cafe', subtitle: '' },
     { image: banner2, alt: 'Banner 2', title: 'Title for Banner 2', subtitle: 'Subtitle for Banner 2' },
   ];
-
-  // Sample offers
   const offers = [
     { id: 1, title: "Order Now!!!", image: banner1 },
     { id: 2, title: "Flat ₹50 Off", image: banner2 },
   ];
-
   const [currentSlide, setCurrentSlide] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  // const navigate = useNavigate();
 
   const recentSearches = ["Samosa", "Jalebi", "Cupcakes"];
   const popularSearches = ["Samosa", "Cupcakes", "Jalebi"];
@@ -130,6 +153,7 @@ const HomePage = () => {
     }
   };
 
+  // Slide carousel auto-change effect
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
@@ -137,20 +161,7 @@ const HomePage = () => {
     return () => clearInterval(interval);
   }, [slides.length]);
 
-
-  useEffect(() => {
-    const storedCart = localStorage.getItem('cartItems');
-    if (storedCart) {
-      setCartItems(JSON.parse(storedCart));
-    }
-  }, []);
-  
-  useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-  }, [cartItems]);  
-
-
-  // Render Skeletons if loading is true
+  // Show skeletons if loading
   if (loading) {
     return (
       <div className="min-h-screen p-4 space-y-4">
@@ -342,11 +353,11 @@ const HomePage = () => {
       </div>
 
       {/* Products Sections */}
-      <ProductsByCat title="Millet Specific" cat="Millet" onAddToCart={handleAddToCart}/>
-      <ProductsByCat title="Beverages" cat="Beverage" onAddToCart={handleAddToCart}/>
-      <ProductsByCat title="Snacks" cat="Snacks" onAddToCart={handleAddToCart}/>
-      <ProductsByCat title="Dessert" cat="Dessert" onAddToCart={handleAddToCart}/>
-      <ProductsByCat title="Fast Food" cat="Fast Food" onAddToCart={handleAddToCart}/>
+      <ProductsByCat title="Millet Specific" cat="Millet" onAddToCart={handleAddToCart} />
+      <ProductsByCat title="Beverages" cat="Beverage" onAddToCart={handleAddToCart} />
+      <ProductsByCat title="Snacks" cat="Snacks" onAddToCart={handleAddToCart} />
+      <ProductsByCat title="Dessert" cat="Dessert" onAddToCart={handleAddToCart} />
+      <ProductsByCat title="Fast Food" cat="Fast Food" onAddToCart={handleAddToCart} />
 
       {/* Render the cart pane fixed at the bottom */}
       <CartPane 
@@ -357,7 +368,7 @@ const HomePage = () => {
       />
 
       {/* Footer */}
-      <Footer/>
+      <Footer />
     </div>
   );
 };

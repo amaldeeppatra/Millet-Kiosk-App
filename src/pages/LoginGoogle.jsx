@@ -11,39 +11,32 @@ const LoginGoogle = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   // Check if the user is authenticated by calling the protected endpoint.
-  //   axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
-  //     .then(
-  //       response => {
-  //         console.log('User authenticated:', response.data);
-  //         navigate('/homepage');
-  //       }
-  //     )
-  //     .catch(error => {
-  //       console.error('User not authenticated:', error);
-  //     })
-  //     .finally(() => {
-  //       setLoading(false);
-  //     });
-  // }, [navigate]);
+  useEffect(() => {
+    // Check if the user is authenticated by calling the protected endpoint.
+    axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
+      .then(
+        response => {
+          console.log('User authenticated:', response.data);
+          navigate('/homepage');
+        }
+      )
+      .catch(error => {
+        console.error('User not authenticated:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [navigate]);
 
-  // const handleGoogleSignIn = () => {
-  //   try {
-  //     // Initiate the OAuth flow by redirecting to your backend's Google auth endpoint.
-  //     window.location.href = `${API_URL}/auth/google`;
-  //   } catch (error) {
-  //     console.error('Error in handleGoogleSignIn:', error);
-  //     alert('Sign-In failed. Please try again.');
-  //   }
-  // };
-
-  async function auth(){
-    const response = await fetch ('http://localhost:5000/request',
-      {method: 'post'});
-      const data = await response.json();
-      navigate(data.url);
-  }
+  const handleGoogleSignIn = () => {
+    try {
+      // Initiate the OAuth flow by redirecting to your backend's Google auth endpoint.
+      window.location.href = `${API_URL}/auth/google`;
+    } catch (error) {
+      console.error('Error in handleGoogleSignIn:', error);
+      alert('Sign-In failed. Please try again.');
+    }
+  };
 
   // if (loading) return <div>Loading...</div>;
   if (loading)
@@ -91,8 +84,7 @@ const LoginGoogle = () => {
           </h2>
 
           <button
-            // onClick={handleGoogleSignIn}
-            onClick={() => auth()}
+            onClick={handleGoogleSignIn}
             className="w-full font-semibold border rounded-full shadow-md px-4 py-3 flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
           >
             <img
