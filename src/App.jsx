@@ -1,6 +1,6 @@
 import './index.css'
 import LandingPage from './pages/LandingPage'
-import LogInWithPhone from './pages/LogInWithPhone'
+// import LogInWithPhone from './pages/LogInWithPhone'
 import { createBrowserRouter,Outlet,RouterProvider } from 'react-router-dom'
 import ReactDOM from 'react-dom/client'
 import LoginGoogle from './pages/LoginGoogle'
@@ -35,32 +35,26 @@ const appRouter = createBrowserRouter(
           path:"/login",
           element:[<LoginGoogle/>]
         },
-        {
-          path:"/login-phone",
-          element:[<LogInWithPhone/>]
-        },
+        // {
+        //   path:"/login-phone",
+        //   element:[<LogInWithPhone/>]
+        // },
         {
           path:"/homepage",
           element:(
-            // <ProtectedRoute>
               <HomePage />
-            // </ProtectedRoute>
           )
         },
         {
           path:"/search",
           element:(
-            // <ProtectedRoute>
               <SearchResultsPage />
-            // </ProtectedRoute>
           )
         },
         {
           path: "/product/:prodId",
           element: (
-            // <ProtectedRoute>
               <ProductPage />
-            // </ProtectedRoute>
           )
         },
         {

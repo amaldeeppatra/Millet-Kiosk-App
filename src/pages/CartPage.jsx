@@ -77,7 +77,7 @@ const CartPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDF5E6] p-5">
+    <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center p-5">
       <div className="max-w-[430px] mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
