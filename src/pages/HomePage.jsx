@@ -18,15 +18,16 @@ const HomePage = () => {
   const location = useLocation();
   
   // Extract token from query parameters (if any) and store it in cookies
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const tokenFromUrl = queryParams.get('token');
-    if (tokenFromUrl) {
-      Cookies.set('token', tokenFromUrl, { secure: true, sameSite: 'none' });
-      // Remove the token from the URL to prevent it from lingering
-      navigate(location.pathname, { replace: true });
-    }
-  }, [location, navigate]);
+  // useEffect(() => {
+  //   const queryParams = new URLSearchParams(location.search);
+  //   const tokenFromUrl = queryParams.get('token');
+  //   if (tokenFromUrl) {
+  //     // Cookies.set('token', tokenFromUrl, { secure: true, sameSite: 'none' });
+  //     Cookies.set('token', tokenFromUrl, { secure: true, sameSite: 'none', expires: 1 / 48 }); // 30 minutes expiration
+  //     // Remove the token from the URL to prevent it from lingering
+  //     navigate(location.pathname, { replace: true });
+  //   }
+  // }, [location, navigate]);
 
   // Now, retrieve the token from cookies
   const token = Cookies.get('token');

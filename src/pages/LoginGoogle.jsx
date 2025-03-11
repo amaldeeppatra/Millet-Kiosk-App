@@ -9,24 +9,24 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const LoginGoogle = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Check if the user is authenticated by calling the protected endpoint.
-    axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
-      .then(
-        response => {
-          console.log('User authenticated:', response.data);
-          navigate('/homepage');
-        }
-      )
-      .catch(error => {
-        console.error('User not authenticated:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [navigate]);
+  // useEffect(() => {
+  //   // Check if the user is authenticated by calling the protected endpoint.
+  //   axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
+  //     .then(
+  //       response => {
+  //         console.log('User authenticated:', response.data);
+  //         navigate('/homepage');
+  //       }
+  //     )
+  //     .catch(error => {
+  //       console.error('User not authenticated:', error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // }, [navigate]);
 
   const handleGoogleSignIn = () => {
     try {
@@ -39,12 +39,12 @@ const LoginGoogle = () => {
   };
 
   // if (loading) return <div>Loading...</div>;
-  if (loading)
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <CircularIndeterminate />
-      </div>
-    );
+  // if (loading)
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <CircularIndeterminate />
+  //     </div>
+  //   );
   
 
   return (
