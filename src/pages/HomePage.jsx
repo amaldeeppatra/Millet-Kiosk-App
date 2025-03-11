@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import ParseJwt from '../utils/ParseJWT';
 import { CgProfile } from "react-icons/cg";
 import { FaChevronLeft } from "react-icons/fa6";
 import Skeleton from '@mui/material/Skeleton';
@@ -153,6 +154,20 @@ const HomePage = () => {
       handleSearch();
     }
   };
+
+  const [userInfo, setUserInfo] = useState(null);
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token){
+      try{
+        // const decoded = parseJwt(token);
+        const decoded = ParseJwt(token);
+        setUserInfo(decoded);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
 
   // Slide carousel auto-change effect
   useEffect(() => {
@@ -330,6 +345,20 @@ const HomePage = () => {
             {slides[currentSlide].subtitle}
           </p>
         </div>
+      </div>
+
+      <div>
+        {userInfo ? (
+          <div>
+            <h3>User Information</h3>
+            {/* <pre>{JSON.stringify(userInfo.user, null, 2)}</pre> */}
+            <pre>{JSON.stringify(userInfo.user.userId, null, 2)}</pre>
+            <pre>{JSON.stringify(userInfo.user.name, null, 2)}</pre>
+            <pre>{JSON.stringify(userInfo.user.email, null, 2)}</pre>
+          </div>
+        ) : (
+          <p>No user information found.</p>
+        )}
       </div>
 
       {/* Offers Scrollable Carousel */}
