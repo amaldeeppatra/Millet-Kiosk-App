@@ -10,7 +10,6 @@ import ProductPage from './pages/ProductPage'
 import CartPage from './pages/CartPage'
 import ProtectedRoute from './utils/ProtectedRoute'
 import ProductsByCat from './pages/ProductsByCat'
-import CheckAuth from './pages/CheckAuth'
 
 
 const App=()=>{
@@ -35,10 +34,6 @@ const appRouter = createBrowserRouter(
         {
           path:"/login",
           element:[<LoginGoogle/>]
-        },
-        {
-          path:"/redirecting",
-          element:[<CheckAuth/>]
         },
         // {
         //   path:"/login-phone",
