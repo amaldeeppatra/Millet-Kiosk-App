@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import MilletLogo from '../resources/homepage/ShaktiSaathi.png';
 import Cookies from 'js-cookie';
 import ParseJwt from '../utils/ParseJWT';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const CartPage = () => {
   // Initialize cartItems from localStorage if available, otherwise use default items.
@@ -101,7 +102,7 @@ const CartPage = () => {
   const customerEmail = userInfo?.user?.email;
 
   const paymentHandler = async (e) => {
-    const response = await fetch('http://localhost:5000/order', {
+    const response = await fetch(`${API_URL}/order`, {
       method: 'POST',
       body: JSON.stringify({
         amount,
