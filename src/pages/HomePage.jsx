@@ -79,20 +79,30 @@ const HomePage = () => {
   const getProductId = (product) => product._id || product.prodId;
   
   const handleAddToCart = (product) => {
-    const productId = getProductId(product);
+    // Assuming product.prodId exists or you can use getProductId(product)
+    const productId = product.prodId; 
     setCartItems((prevItems) => {
-      const existing = prevItems.find(item => getProductId(item) === productId);
+      const existing = prevItems.find(item => item.prodId === productId);
       if (existing) {
         return prevItems.map(item =>
-          getProductId(item) === productId 
-            ? { ...item, quantity: item.quantity + 1 } 
+          item.prodId === productId 
+            ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
-        return [...prevItems, { ...product, quantity: 1 }];
+        // Create a new item with only the necessary fields
+        const newItem = {
+          prodId: product.prodId,
+          prodImg: product.prodImg,
+          prodName: product.prodName, // mapping prodName to name
+          price: product.price,
+          quantity: 1,
+        };
+        return [...prevItems, newItem];
       }
     });
   };
+  
   
   const handleIncrease = (product) => {
     const productId = getProductId(product);

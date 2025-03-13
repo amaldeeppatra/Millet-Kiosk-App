@@ -141,6 +141,21 @@ const CartPage = () => {
           });
           const jsonRes = await validateRes.json();
           console.log(jsonRes);
+
+          if (validationResponse.ok) {
+            alert("Payment verified! Updating inventory...");
+    
+            await fetch(`${API_URL}/order/update-inventory`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ cartItems }),
+            });
+          }
+          else {
+            console.log("Payment failed!");
+          }
       },
       "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
           "name": customerName, //your customer's name
