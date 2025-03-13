@@ -145,7 +145,7 @@ const CartPage = () => {
           const jsonRes = await validateRes.json();
           console.log(jsonRes);
 
-          if (jsonRes.messsage === 'success') {
+          if (jsonRes.message === 'success') {
             // alert("Payment verified! Updating inventory...");
     
             await fetch(`${API_URL}/order/update-inventory`, {
