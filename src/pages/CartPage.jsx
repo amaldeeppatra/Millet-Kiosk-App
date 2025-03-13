@@ -124,10 +124,23 @@ const CartPage = () => {
       "description": "Test Transaction",
       "image": MilletLogo,
       "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-      "handler": function (response){
-          alert(response.razorpay_payment_id);
-          alert(response.razorpay_order_id);
-          alert(response.razorpay_signature)
+      "handler": async function (response){
+          // alert(response.razorpay_payment_id);
+          // alert(response.razorpay_order_id);
+          // alert(response.razorpay_signature)
+          const body = {
+            ...response,
+          };
+
+          const validateRes = await fetch(`${API_URL}/order/validate`, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+              "Content-Type": "application/json",
+            }
+          });
+          const jsonRes = await validateRes.json();
+          console.log(jsonRes);
       },
       "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
           "name": customerName, //your customer's name
@@ -141,6 +154,9 @@ const CartPage = () => {
           "color": "#3399cc"
       }
     };
+
+    // if jsonRes.msg == Payment successful! then hit the inventory update api and also navigate to success page'
+
     var rzp1 = new window.Razorpay(options);
     rzp1.on('payment.failed', function (response){
             alert(response.error.code);
