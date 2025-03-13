@@ -130,6 +130,7 @@ const CartPage = () => {
           // alert(response.razorpay_signature)
           const body = {
             ...response,
+            userId: userInfo?.user?._id
           };
 
           const validateRes = await fetch(`${API_URL}/order/validate`, {
