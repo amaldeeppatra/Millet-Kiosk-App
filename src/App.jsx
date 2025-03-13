@@ -10,6 +10,7 @@ import ProductPage from './pages/ProductPage'
 import CartPage from './pages/CartPage'
 import ProtectedRoute from './utils/ProtectedRoute'
 import ProductsByCat from './pages/ProductsByCat'
+import OrderSuccess from './pages/OrderSuccess'
 
 
 const App=()=>{
@@ -69,6 +70,12 @@ const appRouter = createBrowserRouter(
           path: "/categories",
           element: (
             <ProductsByCat/>
+          )
+        },
+        {
+          path: "/order-success",
+          element: (
+            <OrderSuccess/>
           )
         }
       ]
