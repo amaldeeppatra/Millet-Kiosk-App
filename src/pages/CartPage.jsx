@@ -130,6 +130,7 @@ const CartPage = () => {
           // alert(response.razorpay_signature)
           const body = {
             ...response,
+            cartItems,
             userId: userInfo?.user?._id,
             totalPrice: total
           };
