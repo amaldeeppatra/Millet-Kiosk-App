@@ -12,8 +12,7 @@ const CartPage = () => {
     const storedCart = localStorage.getItem('cartItems');
     return storedCart 
       ? JSON.parse(storedCart) 
-      : [
-        ];
+      : [];
   });
 
   // Save cartItems to localStorage whenever they change.
@@ -80,8 +79,7 @@ const CartPage = () => {
     setCartItems([]);
   };
 
-
-  const amount = total*100;
+  const amount = total * 100;
   const currency = 'INR';
   const receiptId = 'qwsaq1';
   
@@ -102,6 +100,8 @@ const CartPage = () => {
   const customerEmail = userInfo?.user?.email;
 
   const paymentHandler = async (e) => {
+    e.preventDefault();
+    
     const response = await fetch(`${API_URL}/order`, {
       method: 'POST',
       body: JSON.stringify({
@@ -117,17 +117,14 @@ const CartPage = () => {
     console.log(order);
 
     var options = {
-      "key": "rzp_test_FmFnhFzbQdnD1h", // Enter the Key ID generated from the Dashboard
-      amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+      key: "rzp_test_FmFnhFzbQdnD1h", // Your Key ID from the Dashboard
+      amount, // Amount in currency subunits
       currency,
-      "name": "Millet Kiosk App", //your business name
-      "description": "Test Transaction",
-      "image": MilletLogo,
-      "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-      "handler": async function (response){
-          // alert(response.razorpay_payment_id);
-          // alert(response.razorpay_order_id);
-          // alert(response.razorpay_signature)
+      name: "Millet Kiosk App", // Your business name
+      description: "Test Transaction",
+      image: MilletLogo,
+      order_id: order.id, // Order ID from your backend
+      handler: async function (response) {
           const body = {
             ...response,
             cartItems,
@@ -146,8 +143,7 @@ const CartPage = () => {
           console.log(jsonRes);
 
           if (jsonRes.message === 'success') {
-            // alert("Payment verified! Updating inventory...");
-    
+            // Update inventory after successful payment verification
             await fetch(`${API_URL}/order/update-inventory`, {
                 method: "POST",
                 headers: {
@@ -155,40 +151,39 @@ const CartPage = () => {
                 },
                 body: JSON.stringify({ cartItems }),
             });
+            // Clear the cart and navigate to the order success page
+            clearCart();
+            navigate('/order-success');
           }
           else {
             console.log("Payment failed!");
           }
       },
-      "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
-          "name": customerName, //your customer's name
-          "email": customerEmail, //your customer's email
-          "contact": "9000090000"  //Provide the customer's phone number for better conversion rates 
+      prefill: {
+          name: customerName,
+          email: customerEmail,
+          contact: "9000090000"
       },
-      "notes": {
-          "address": "Razorpay Corporate Office"
+      notes: {
+          address: "Razorpay Corporate Office"
       },
-      "theme": {
-          "color": "#3399cc"
+      theme: {
+          color: "#3399cc"
       }
     };
 
-    // if jsonRes.msg == Payment successful! then hit the inventory update api and also navigate to success page'
-
     var rzp1 = new window.Razorpay(options);
-    rzp1.on('payment.failed', function (response){
-            alert(response.error.code);
-            alert(response.error.description);
-            alert(response.error.source);
-            alert(response.error.step);
-            alert(response.error.reason);
-            alert(response.error.metadata.order_id);
-            alert(response.error.metadata.payment_id);
+    rzp1.on('payment.failed', function (response) {
+        alert(response.error.code);
+        alert(response.error.description);
+        alert(response.error.source);
+        alert(response.error.step);
+        alert(response.error.reason);
+        alert(response.error.metadata.order_id);
+        alert(response.error.metadata.payment_id);
     });
     rzp1.open();
-    e.preventDefault();
-  }
-
+  };
 
   return (
     <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center p-5">
@@ -306,7 +301,10 @@ const CartPage = () => {
         </div>
 
         {/* Place Order Button */}
-        <button className="w-full bg-[#8B4513] text-white py-4 rounded-[20px] text-lg font-semibold hover:bg-[#654321] mb-4" onClick={paymentHandler}>
+        <button 
+          className="w-full bg-[#8B4513] text-white py-4 rounded-[20px] text-lg font-semibold hover:bg-[#654321] mb-4" 
+          onClick={paymentHandler}
+        >
           PLACE ORDER
         </button>
       </div>
