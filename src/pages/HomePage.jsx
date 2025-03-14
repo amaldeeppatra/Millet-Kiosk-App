@@ -357,11 +357,10 @@ const HomePage = () => {
         </div>
       </div>
 
-      <div>
+      {/* <div>
         {userInfo ? (
           <div>
             <h3>User Information</h3>
-            {/* <pre>{JSON.stringify(userInfo.user, null, 2)}</pre> */}
             <pre>{JSON.stringify(userInfo.user.userId, null, 2)}</pre>
             <pre>{JSON.stringify(userInfo.user.name, null, 2)}</pre>
             <pre>{JSON.stringify(userInfo.user.email, null, 2)}</pre>
@@ -369,7 +368,7 @@ const HomePage = () => {
         ) : (
           <p>No user information found.</p>
         )}
-      </div>
+      </div> */}
 
       {/* Offers Scrollable Carousel */}
       <div className="mt-10 px-4">
