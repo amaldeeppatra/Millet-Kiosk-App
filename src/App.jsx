@@ -1,9 +1,10 @@
 import React from 'react'
+import LiveOrders from './pages/LiveOrders'
 
 const App = () => {
   return (
-    <div className='bg-slate-600'>
-      hello world
+    <div>
+      <LiveOrders/>
     </div>
   )
 }
