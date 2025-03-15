@@ -15,6 +15,8 @@ const MyProfile = () => {
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
   useEffect(() => {
     const token = Cookies.get('token');
@@ -37,6 +39,40 @@ const MyProfile = () => {
     }, 800);
     return () => clearTimeout(timer);
   }, [navigate]);
+  
+  // Fetch user orders when orders tab is activated
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!userInfo?.user?._id) return;
+      
+      setOrdersLoading(true);
+      try {
+        const token = Cookies.get('token');
+        const response = await axios.get(`${API_URL}/order/user/${userInfo.user._id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.data.orders) {
+          // Sort orders by date (newest first) and take only the last 3
+          const sortedOrders = response.data.orders.sort((a, b) => 
+            new Date(b.createdAt) - new Date(a.createdAt)
+          ).slice(0, 3);
+          
+          setOrders(sortedOrders);
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      } finally {
+        setOrdersLoading(false);
+      }
+    };
+
+    if (activeTab === 'orders') {
+      fetchOrders();
+    }
+  }, [userInfo, activeTab]);
 
   const handleLogout = () => {
     // Clear cookies and local storage
@@ -44,6 +80,34 @@ const MyProfile = () => {
     
     // Redirect to login page
     navigate('/login');
+  };
+
+  // Format date string
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Get order status styling
+  const getStatusStyle = (status) => {
+    switch(status) {
+      case 'DELIVERED':
+        return 'bg-green-500 text-white';
+      case 'PLACED':
+        return 'bg-yellow-500 text-white';
+      case 'PREPARING':
+        return 'bg-blue-500 text-white';
+      case 'CANCELLED':
+        return 'bg-red-500 text-white';
+      default:
+        return 'bg-gray-500 text-white';
+    }
   };
 
   // Function to render profile picture
@@ -215,12 +279,12 @@ const MyProfile = () => {
 
             {/* Account Actions */}
             <div className="pt-4">
-              <button 
+              {/* <button 
                 className="w-full py-3 flex items-center justify-center bg-[#291C08] text-white rounded-xl mb-3"
-                onClick={() => navigate('/orders')}
+                onClick={() => setActiveTab('orders')}
               >
                 <FaBox className="mr-2" /> My Orders
-              </button>
+              </button> */}
               <button 
                 className="w-full py-3 flex items-center justify-center bg-red-600 text-white rounded-xl"
                 onClick={handleLogout}
@@ -237,42 +301,68 @@ const MyProfile = () => {
               Recent Orders
             </h3>
             
-            {/* Order Cards */}
-            <div className="space-y-4">
-              {[1, 2, 3].map((order) => (
-                <div 
-                  key={order} 
-                  className="bg-white/40 rounded-xl p-4 shadow-sm"
-                  onClick={() => navigate(`/order/${order}`)}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-semibold">Order #{1000 + order}</h4>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      order === 1 ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white'
-                    }`}>
-                      {order === 1 ? 'Delivered' : 'In Progress'}
-                    </span>
+            {ordersLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((index) => (
+                  <div key={index} className="bg-white/40 rounded-xl p-4 shadow-sm">
+                    <Skeleton variant="text" width="60%" height={24} className="mb-2" />
+                    <Skeleton variant="text" width="40%" height={16} className="mb-2" />
+                    <div className="flex justify-between mt-2">
+                      <Skeleton variant="text" width="20%" height={20} />
+                      <Skeleton variant="text" width="30%" height={20} />
+                    </div>
                   </div>
-                  <p className="text-sm text-[#291C08]/70">
-                    {new Date(2025, 2, 15 - order).toLocaleDateString()}
-                  </p>
-                  <div className="flex justify-between mt-2">
-                    <p className="font-medium">₹{(order * 100) + 99}</p>
-                    <button className="text-[#291C08] underline text-sm">
-                      View Details
-                    </button>
+                ))}
+              </div>
+            ) : orders.length > 0 ? (
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div 
+                    key={order._id} 
+                    className="bg-white/40 rounded-xl p-4 shadow-sm"
+                    onClick={() => navigate(`/order/${order.orderId}`)}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-semibold">Order #{order.orderId}</h4>
+                      <span className={`px-2 py-1 text-xs rounded-full ${getStatusStyle(order.orderStatus)}`}>
+                        {order.orderStatus}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#291C08]/70">
+                      {formatDate(order.createdAt)}
+                    </p>
+                    <div className="flex justify-between mt-2">
+                      <p className="font-medium">₹{order.totalPrice.$numberDecimal || order.totalPrice}</p>
+                      <button className="text-[#291C08] underline text-sm">
+                        View Details
+                      </button>
+                    </div>
                   </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="w-16 h-16 mx-auto bg-[#291C08]/10 rounded-full flex items-center justify-center mb-3">
+                  <FaBox className="text-[#291C08]/50 text-2xl" />
                 </div>
-              ))}
-            </div>
+                <p className="text-[#291C08]/70">No orders found</p>
+                <button 
+                  className="mt-4 px-6 py-2 bg-[#291C08] text-white rounded-xl"
+                  onClick={() => navigate('/homepage')}
+                >
+                  Start Shopping
+                </button>
+              </div>
+            )}
             
-            {/* View All Button */}
-            <button 
-              className="w-full mt-4 py-3 flex items-center justify-center bg-[#291C08] text-white rounded-xl"
-              onClick={() => navigate('/orders')}
-            >
-              View All Orders
-            </button>
+            {orders.length > 0 && (
+              <button 
+                className="w-full mt-4 py-3 flex items-center justify-center bg-[#291C08] text-white rounded-xl"
+                onClick={() => navigate('/orders')}
+              >
+                <FaBox className="mr-2" />View All Orders
+              </button>
+            )}
           </div>
         )}
 

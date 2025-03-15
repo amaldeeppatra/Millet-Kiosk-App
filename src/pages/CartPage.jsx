@@ -153,7 +153,7 @@ const CartPage = () => {
             });
             // Clear the cart and navigate to the order success page
             clearCart();
-            navigate('/order-success');
+            navigate('/order-success', { state: { orderId: jsonRes.orderId } });
           }
           else {
             console.log("Payment failed!");
