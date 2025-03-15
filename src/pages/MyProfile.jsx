@@ -180,7 +180,6 @@ const MyProfile = () => {
           {renderProfilePicture()}
           <div className="ml-4">
             <h2 className="text-xl font-bold text-[#291C08]">{userInfo?.user?.name || 'User'}</h2>
-            {/* <p className="text-[#291C08]/80">{userInfo?.user?.email || 'email@example.com'}</p> */}
           </div>
           <button 
             className="ml-auto p-2 bg-[#291C08] rounded-full text-white"
