@@ -1,33 +1,93 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaChevronLeft, FaCheck, FaMapMarkerAlt, FaRegClock } from 'react-icons/fa';
+import { FaChevronLeft } from 'react-icons/fa';
 import Lottie from 'lottie-react';
-import successAnimation from '../resources/animations/success-animation.json'; // You'll need to add this animation file
+import successAnimation from '../resources/animations/success-animation.json';
 import Skeleton from '@mui/material/Skeleton';
+import Cookies from 'js-cookie';
+import ParseJwt from '../utils/ParseJWT';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const OrderSuccess = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [orderDetails, setOrderDetails] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
   
-  // Get order details from location state or fetch from API
+  // Fetch order details
   useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => {
-      // This would normally come from the order completion process
-      setOrderDetails({
-        orderId: 'ORD' + Math.floor(1000 + Math.random() * 9000),
-        date: new Date().toLocaleString(),
-        items: 3,
-        total: 499,
-        estimatedDelivery: '20 minutes',
-        deliveryAddress: 'Main Campus, IIIT Bangalore'
-      });
-      setLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
+    const fetchOrderDetails = async () => {
+      try {
+        // Get user info from token for authorization
+        const token = Cookies.get('token');
+        if (token) {
+          const decoded = ParseJwt(token);
+          setUserInfo(decoded);
+          
+          // Get orderId from Razorpay response (passed in location.state)
+          const orderId = location.state?.orderId;
+          
+          if (orderId) {
+            const response = await fetch(`${API_URL}/order/${orderId}`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              const orderData = data.order; // Access the nested order object
+              
+              setOrderDetails({
+                orderId: orderData.orderId,
+                date: new Date(orderData.createdAt).toLocaleString(),
+                items: orderData.items.length,
+                total: parseFloat(orderData.totalPrice.$numberDecimal || orderData.totalPrice),
+                products: orderData.items
+              });
+            } else {
+              console.error('Failed to fetch order details');
+              // Fallback to local storage cart data if API fails
+              const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+              setOrderDetails({
+                orderId: 'N/A',
+                date: new Date().toLocaleString(),
+                items: cartItems.length,
+                total: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                products: cartItems
+              });
+            }
+          } else {
+            // Fallback to local storage cart data if no orderId
+            const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+            setOrderDetails({
+              orderId: 'N/A',
+              date: new Date().toLocaleString(),
+              items: cartItems.length,
+              total: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+              products: cartItems
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+        // Fallback to local storage cart data if any error occurs
+        const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+        setOrderDetails({
+          orderId: 'N/A',
+          date: new Date().toLocaleString(),
+          items: cartItems.length,
+          total: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+          products: cartItems
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrderDetails();
   }, [location]);
 
   if (loading) {
@@ -42,7 +102,6 @@ const OrderSuccess = () => {
           <Skeleton variant="text" width="100%" height={40} className="mb-2" />
           <Skeleton variant="text" width="60%" height={30} className="mx-auto mb-8" />
           <Skeleton variant="rectangular" width="100%" height={150} className="rounded-xl mb-6" />
-          <Skeleton variant="rectangular" width="100%" height={50} className="rounded-xl mb-3" />
           <Skeleton variant="rectangular" width="100%" height={50} className="rounded-xl" />
         </div>
       </div>
@@ -85,54 +144,45 @@ const OrderSuccess = () => {
         <div className="space-y-3">
           <div className="flex justify-between">
             <p className="text-[#291C08]/70">Order ID</p>
-            <p className="font-medium">{orderDetails.orderId}</p>
+            <p className="font-medium">{orderDetails?.orderId || 'N/A'}</p>
           </div>
           <div className="flex justify-between">
             <p className="text-[#291C08]/70">Date & Time</p>
-            <p className="font-medium">{orderDetails.date}</p>
+            <p className="font-medium">{orderDetails?.date || 'N/A'}</p>
           </div>
           <div className="flex justify-between">
             <p className="text-[#291C08]/70">Items</p>
-            <p className="font-medium">{orderDetails.items} items</p>
+            <p className="font-medium">{orderDetails?.items || 0} items</p>
           </div>
           <div className="flex justify-between">
             <p className="text-[#291C08]/70">Total Amount</p>
-            <p className="font-bold">₹{orderDetails.total}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Delivery Information */}
-      {/* <div className="mx-auto max-w-md bg-white/30 backdrop-blur-lg rounded-3xl p-6 shadow-lg mb-6">
-        <div className="flex items-center mb-4">
-          <div className="w-10 h-10 bg-[#291C08] rounded-full flex items-center justify-center text-white mr-3">
-            <FaRegClock />
-          </div>
-          <div>
-            <p className="text-sm text-[#291C08]/70">Estimated Delivery Time</p>
-            <p className="font-semibold">{orderDetails.estimatedDelivery}</p>
+            <p className="font-bold">₹{orderDetails?.total || 0}</p>
           </div>
         </div>
         
-        <div className="flex items-center">
-          <div className="w-10 h-10 bg-[#291C08] rounded-full flex items-center justify-center text-white mr-3">
-            <FaMapMarkerAlt />
+        {/* Product details */}
+        {orderDetails?.products && orderDetails.products.length > 0 && (
+          <div className="mt-4 pt-3 border-t border-[#291C08]/30">
+            <h4 className="font-medium text-[#291C08] mb-2">Items Ordered</h4>
+            {orderDetails.products.map((item, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b border-[#291C08]/10 last:border-b-0">
+                <div className="flex items-center">
+                  {item.prodImg && (
+                    <img src={item.prodImg} alt={item.prodName} className="w-10 h-10 rounded-lg object-cover mr-2" />
+                  )}
+                  <span className="text-[#291C08]">{item.prodName}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-[#291C08] mr-2">x{item.quantity}</span>
+                </div>
+              </div>
+            ))}
           </div>
-          <div>
-            <p className="text-sm text-[#291C08]/70">Delivery Address</p>
-            <p className="font-semibold">{orderDetails.deliveryAddress}</p>
-          </div>
-        </div>
-      </div> */}
+        )}
+      </div>
 
       {/* Action Buttons */}
       <div className="mx-auto max-w-md space-y-3">
-        {/* <button 
-          className="w-full py-3 flex items-center justify-center bg-[#291C08] text-white rounded-xl"
-          onClick={() => navigate(`/track-order/${orderDetails.orderId}`)}
-        >
-          Track Order
-        </button> */}
         <button 
           className="w-full py-3 flex items-center justify-center bg-white/50 backdrop-blur-md border border-[#291C08] text-[#291C08] rounded-xl"
           onClick={() => navigate('/homepage')}
@@ -143,11 +193,7 @@ const OrderSuccess = () => {
 
       {/* Promotional Note */}
       <div className="mx-auto max-w-md mt-8 text-center absolute bottom-5 left-7">
-        {/* <div className="bg-[#291C08] rounded-full text-white text-xs px-3 py-1 inline-flex items-center">
-          <FaCheck className="mr-1" /> New User
-        </div> */}
         <p className="mt-2 text-[0.9rem] text-[#291C08]">
-          {/* Use code <span className="font-bold">WELCOME10</span> for 10% off on your next order! */}
           Thank you for ordering! With ❤️ from Milet Hub Cafe.
         </p>
       </div>

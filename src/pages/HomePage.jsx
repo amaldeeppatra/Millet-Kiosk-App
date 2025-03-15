@@ -187,6 +187,41 @@ const HomePage = () => {
     return () => clearInterval(interval);
   }, [slides.length]);
 
+
+  const renderProfilePicture = () => {
+      if (userInfo?.user?.avatar) {
+        // If profile picture exists in the token, display it
+        return (
+          <img 
+            src={userInfo.user.avatar} 
+            alt="Profile"
+            className="size-8 rounded-full object-cover"
+          />
+        );
+      } else if (userInfo?.user?.name) {
+        // If no profile picture but name exists, show initials
+        const initials = userInfo.user.name
+          .split(' ')
+          .map(name => name[0])
+          .join('')
+          .toUpperCase();
+        
+        return (
+          <div className="size-8 rounded-full object-cover">
+            {initials}
+          </div>
+        );
+      } else {
+        // Fallback to icon
+        return (
+          <div className="bg-[#291C08] p-2 rounded-full shadow-md">
+            <CgProfile className="text-4xl text-white" />
+          </div>
+        );
+      }
+    };
+
+
   const handleLogout = () => {
       // Clear cookies and local storage
       Cookies.remove('token');
@@ -261,7 +296,8 @@ const HomePage = () => {
                 padding: '2px' 
               }} 
             /> */}
-            <img src={userInfo.user.avatar} alt="" className="size-8 rounded-full object-cover"/>
+            {/* <img src={userInfo.user.avatar} alt="" className="size-8 rounded-full object-cover"/> */}
+            {renderProfilePicture()}
           </div>
         </nav>
       </header>
