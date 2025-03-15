@@ -175,12 +175,12 @@ const MyProfile = () => {
       </div>
 
       {/* Profile Header Card */}
-      <div className="mx-4 bg-white/30 backdrop-blur-lg rounded-3xl p-6 shadow-lg">
+      <div className="mx-4 bg-white/30 backdrop-blur-lg rounded-3xl p-5 shadow-lg">
         <div className="flex items-center">
           {renderProfilePicture()}
           <div className="ml-4">
             <h2 className="text-xl font-bold text-[#291C08]">{userInfo?.user?.name || 'User'}</h2>
-            <p className="text-[#291C08]/80">{userInfo?.user?.email || 'email@example.com'}</p>
+            {/* <p className="text-[#291C08]/80">{userInfo?.user?.email || 'email@example.com'}</p> */}
           </div>
           <button 
             className="ml-auto p-2 bg-[#291C08] rounded-full text-white"
