@@ -187,6 +187,14 @@ const HomePage = () => {
     return () => clearInterval(interval);
   }, [slides.length]);
 
+  const handleLogout = () => {
+      // Clear cookies and local storage
+      Cookies.remove('token');
+      
+      // Redirect to login page
+      navigate('/login');
+    };
+
   // Show skeletons if loading
   if (loading) {
     return (
@@ -218,13 +226,13 @@ const HomePage = () => {
             {menuOpen && (
               <div className="absolute top-12 left-0 w-48 bg-white/30 backdrop-blur-lg border border-white/40 rounded-lg shadow-lg z-50">
                 <ul className="text-black text-sm">
-                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-t-lg transition-all">
+                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-t-lg transition-all" onClick={() => navigate("/profile")}>
                     My Profile
                   </li>
                   <li className="px-4 py-2 hover:bg-white/50 cursor-pointer transition-all">
                     Previous Orders
                   </li>
-                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-b-lg transition-all">
+                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-b-lg transition-all" onClick={handleLogout}>
                     Logout
                   </li>
                 </ul>
@@ -244,7 +252,7 @@ const HomePage = () => {
 
           {/* Profile Icon */}
           <div className="z-50">
-            <CgProfile 
+            {/* <CgProfile 
               style={{ 
                 fontSize: '2rem', 
                 backgroundColor: '#291C08', 
@@ -252,7 +260,8 @@ const HomePage = () => {
                 borderRadius: '50px', 
                 padding: '2px' 
               }} 
-            />
+            /> */}
+            <img src={userInfo.user.avatar} alt="" className="size-8 rounded-full object-cover"/>
           </div>
         </nav>
       </header>
