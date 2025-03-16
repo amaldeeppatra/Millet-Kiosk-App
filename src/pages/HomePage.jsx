@@ -11,6 +11,7 @@ import banner2 from '../resources/homepage/ShaktiSaathi.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
 import Footer from '../components/footer/Footer';
 import CartPane from '../components/homepage/CartPane';
+import MissionShaktiCard from '../components/homepage/MissionShaktiCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -396,6 +397,9 @@ const HomePage = () => {
         onDecrease={handleDecrease}
         onRemove={handleRemove}
       />
+
+      {/* millet shakti program */}
+      <MissionShaktiCard/>
 
       {/* Footer */}
       <Footer />
