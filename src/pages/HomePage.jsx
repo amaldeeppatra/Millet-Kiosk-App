@@ -39,20 +39,20 @@ const HomePage = () => {
   const [cartItems, setCartItems] = useState([]);
 
   // Check if the user is authenticated
-  useEffect(() => {
-    axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
-      .then(response => {
-        console.log('User authenticated:', response.data);
-        // Optionally, redirect if needed
-        // navigate('/homepage');
-      })
-      .catch(error => {
-        console.error('User not authenticated:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [navigate]);
+  // useEffect(() => {
+  //   axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
+  //     .then(response => {
+  //       console.log('User authenticated:', response.data);
+  //       // Optionally, redirect if needed
+  //       // navigate('/homepage');
+  //     })
+  //     .catch(error => {
+  //       console.error('User not authenticated:', error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // }, [navigate]);
 
   // Simulate data fetching delay
   useEffect(() => {
