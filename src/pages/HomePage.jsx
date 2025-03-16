@@ -187,6 +187,49 @@ const HomePage = () => {
     return () => clearInterval(interval);
   }, [slides.length]);
 
+
+  const renderProfilePicture = () => {
+      if (userInfo?.user?.avatar) {
+        // If profile picture exists in the token, display it
+        return (
+          <img 
+            src={userInfo.user.avatar} 
+            alt="Profile"
+            className="size-8 rounded-full object-cover"
+          />
+        );
+      } else if (userInfo?.user?.name) {
+        // If no profile picture but name exists, show initials
+        const initials = userInfo.user.name
+          .split(' ')
+          .map(name => name[0])
+          .join('')
+          .toUpperCase();
+        
+        return (
+          <div className="size-8 rounded-full object-cover">
+            {initials}
+          </div>
+        );
+      } else {
+        // Fallback to icon
+        return (
+          <div className="bg-[#291C08] p-2 rounded-full shadow-md">
+            <CgProfile className="text-4xl text-white" />
+          </div>
+        );
+      }
+    };
+
+
+  const handleLogout = () => {
+      // Clear cookies and local storage
+      Cookies.remove('token');
+      
+      // Redirect to login page
+      navigate('/login');
+    };
+
   // Show skeletons if loading
   if (loading) {
     return (
@@ -218,13 +261,13 @@ const HomePage = () => {
             {menuOpen && (
               <div className="absolute top-12 left-0 w-48 bg-white/30 backdrop-blur-lg border border-white/40 rounded-lg shadow-lg z-50">
                 <ul className="text-black text-sm">
-                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-t-lg transition-all">
+                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-t-lg transition-all" onClick={() => navigate("/profile")}>
                     My Profile
                   </li>
                   <li className="px-4 py-2 hover:bg-white/50 cursor-pointer transition-all">
                     Previous Orders
                   </li>
-                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-b-lg transition-all">
+                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-b-lg transition-all" onClick={handleLogout}>
                     Logout
                   </li>
                 </ul>
@@ -244,7 +287,7 @@ const HomePage = () => {
 
           {/* Profile Icon */}
           <div className="z-50">
-            <CgProfile 
+            {/* <CgProfile 
               style={{ 
                 fontSize: '2rem', 
                 backgroundColor: '#291C08', 
@@ -252,7 +295,9 @@ const HomePage = () => {
                 borderRadius: '50px', 
                 padding: '2px' 
               }} 
-            />
+            /> */}
+            {/* <img src={userInfo.user.avatar} alt="" className="size-8 rounded-full object-cover"/> */}
+            {renderProfilePicture()}
           </div>
         </nav>
       </header>
@@ -357,11 +402,10 @@ const HomePage = () => {
         </div>
       </div>
 
-      <div>
+      {/* <div>
         {userInfo ? (
           <div>
             <h3>User Information</h3>
-            {/* <pre>{JSON.stringify(userInfo.user, null, 2)}</pre> */}
             <pre>{JSON.stringify(userInfo.user.userId, null, 2)}</pre>
             <pre>{JSON.stringify(userInfo.user.name, null, 2)}</pre>
             <pre>{JSON.stringify(userInfo.user.email, null, 2)}</pre>
@@ -369,7 +413,7 @@ const HomePage = () => {
         ) : (
           <p>No user information found.</p>
         )}
-      </div>
+      </div> */}
 
       {/* Offers Scrollable Carousel */}
       <div className="mt-10 px-4">
