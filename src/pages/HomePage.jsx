@@ -11,6 +11,7 @@ import banner2 from '../resources/homepage/ShaktiSaathi.png';
 import ProductsByCat from '../components/homepage/ProductsByCat';
 import Footer from '../components/footer/Footer';
 import CartPane from '../components/homepage/CartPane';
+import MissionShaktiCard from '../components/homepage/MissionShaktiCard';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -39,20 +40,20 @@ const HomePage = () => {
   const [cartItems, setCartItems] = useState([]);
 
   // Check if the user is authenticated
-  useEffect(() => {
-    axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
-      .then(response => {
-        console.log('User authenticated:', response.data);
-        // Optionally, redirect if needed
-        // navigate('/homepage');
-      })
-      .catch(error => {
-        console.error('User not authenticated:', error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [navigate]);
+  // useEffect(() => {
+  //   axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
+  //     .then(response => {
+  //       console.log('User authenticated:', response.data);
+  //       // Optionally, redirect if needed
+  //       // navigate('/homepage');
+  //     })
+  //     .catch(error => {
+  //       console.error('User not authenticated:', error);
+  //     })
+  //     .finally(() => {
+  //       setLoading(false);
+  //     });
+  // }, [navigate]);
 
   // Simulate data fetching delay
   useEffect(() => {
@@ -450,6 +451,9 @@ const HomePage = () => {
         onDecrease={handleDecrease}
         onRemove={handleRemove}
       />
+
+      {/* millet shakti program */}
+      <MissionShaktiCard/>
 
       {/* Footer */}
       <Footer />

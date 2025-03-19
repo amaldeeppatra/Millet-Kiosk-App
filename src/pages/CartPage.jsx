@@ -129,6 +129,8 @@ const CartPage = () => {
             ...response,
             cartItems,
             userId: userInfo?.user?._id,
+            email: userInfo?.user?.email,
+            name: userInfo?.user?.name,
             totalPrice: total
           };
 
