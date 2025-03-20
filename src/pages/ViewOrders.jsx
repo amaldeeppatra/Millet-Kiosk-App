@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaChevronLeft, FaBox } from 'react-icons/fa'; // Add this import
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import ParseJwt from '../utils/ParseJWT'; // Import the same JWT parser from MyProfile
+import ParseJwt from '../utils/ParseJWT';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
