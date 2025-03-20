@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaChevronLeft, FaBox, FaClock, FaReceipt } from 'react-icons/fa';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import ErrorPage from '../components/ErrorPage';  // Import the custom error component
+import ErrorPage from '../components/ErrorPage';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -64,14 +64,6 @@ const OrderDetails = () => {
     fetchOrderDetails();
   }, [orderId, navigate]);
 
-  // If there's an error, render the custom error page
-  if (error) {
-    return <ErrorPage status={error.status} message={error.message} />;
-  }
-
-  // Rest of your component remains the same
-  // ...
-  
   // Helper function to format price values
   const formatPrice = (price) => {
     if (price && price.$numberDecimal) {
@@ -80,7 +72,91 @@ const OrderDetails = () => {
     return price;
   };
 
-  // The rest of your component code...
+  // If there's an error, render the custom error page
+  if (error) {
+    return <ErrorPage status={error.status} message={error.message} />;
+  }
+
+  if (loading) {
+    return <div className="loading-spinner">Loading order details...</div>;
+  }
+
+  return (
+    <div className="order-details-container">
+      <div className="order-header">
+        <button 
+          className="back-button" 
+          onClick={() => navigate('/orders')}
+        >
+          <FaChevronLeft /> Back to Orders
+        </button>
+        <h1>Order #{order.orderNumber}</h1>
+      </div>
+
+      <div className="order-info-card">
+        <div className="order-status">
+          <FaClock className="icon" />
+          <span className={`status-badge ${order.status.toLowerCase()}`}>
+            {order.status}
+          </span>
+        </div>
+        
+        <div className="order-date">
+          <p>Placed on: {new Date(order.createdAt).toLocaleDateString()}</p>
+        </div>
+      </div>
+
+      <div className="order-items-section">
+        <h2><FaBox className="icon" /> Items</h2>
+        <div className="order-items-list">
+          {order.items.map((item, index) => (
+            <div key={index} className="order-item">
+              <div className="item-image">
+                <img src={item.product.image} alt={item.product.name} />
+              </div>
+              <div className="item-details">
+                <h3>{item.product.name}</h3>
+                <p className="item-qty">Quantity: {item.quantity}</p>
+                <p className="item-price">${formatPrice(item.price)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="order-summary">
+        <h2><FaReceipt className="icon" /> Order Summary</h2>
+        <div className="summary-details">
+          <div className="summary-row">
+            <span>Subtotal:</span>
+            <span>${formatPrice(order.subtotal)}</span>
+          </div>
+          <div className="summary-row">
+            <span>Shipping:</span>
+            <span>${formatPrice(order.shipping)}</span>
+          </div>
+          <div className="summary-row">
+            <span>Tax:</span>
+            <span>${formatPrice(order.tax)}</span>
+          </div>
+          <div className="summary-row total">
+            <span>Total:</span>
+            <span>${formatPrice(order.total)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="shipping-info">
+        <h2>Shipping Information</h2>
+        <p>{order.shippingAddress.name}</p>
+        <p>{order.shippingAddress.street}</p>
+        <p>
+          {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zip}
+        </p>
+        <p>{order.shippingAddress.country}</p>
+      </div>
+    </div>
+  );
 };
 
 export default OrderDetails;
