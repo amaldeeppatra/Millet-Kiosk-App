@@ -15,7 +15,7 @@ const OrderDetails = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Helper function with better null checking
+  // Helper function with better null checking for Decimal128 type
   const formatPrice = (price) => {
     if (!price) return '0.00';
     if (typeof price === 'object' && price.$numberDecimal) {
@@ -115,27 +115,43 @@ const OrderDetails = () => {
     );
   }
 
-  // Safe rendering with conditional checks for all properties
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  };
+
+  // Safe rendering with conditional checks for all properties - updated to match backend schema
   return (
     <div className="order-details-container">
       <div className="order-header">
         <button className="back-button" onClick={() => navigate('/orders')}>
           <FaChevronLeft /> Back to Orders
         </button>
-        <h1>Order #{order.orderNumber || orderId}</h1>
+        <h1>Order #{order.orderId || orderId}</h1>
       </div>
 
       <div className="order-info-card">
         <div className="order-status">
           <FaClock className="icon" />
-          <span className={`status-badge ${(order.status || '').toLowerCase()}`}>
-            {order.status || 'Processing'}
+          <span className={`status-badge ${(order.orderStatus || '').toLowerCase()}`}>
+            {order.orderStatus || 'PLACED'}
           </span>
         </div>
         
         <div className="order-date">
-          <p>Placed on: {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</p>
+          <p>Placed on: {order.createdAt ? formatDate(order.createdAt) : 'N/A'}</p>
+          {order.updatedAt && (
+            <p>Last updated: {formatDate(order.updatedAt)}</p>
+          )}
         </div>
+        
+        {order.transactionId && (
+          <div className="transaction-info">
+            <p>Transaction ID: {order.transactionId}</p>
+          </div>
+        )}
       </div>
 
       <div className="order-items-section">
@@ -144,15 +160,10 @@ const OrderDetails = () => {
           {order.items && order.items.length > 0 ? (
             order.items.map((item, index) => (
               <div key={index} className="order-item">
-                <div className="item-image">
-                  {item.product && item.product.image && (
-                    <img src={item.product.image} alt={item.product?.name || 'Product'} />
-                  )}
-                </div>
                 <div className="item-details">
-                  <h3>{item.product?.name || 'Unknown Product'}</h3>
+                  <h3>{item.prodName || 'Unknown Product'}</h3>
+                  <p className="item-id">Product ID: {item.prodId || 'N/A'}</p>
                   <p className="item-qty">Quantity: {item.quantity || 0}</p>
-                  <p className="item-price">${formatPrice(item.price)}</p>
                 </div>
               </div>
             ))
@@ -165,36 +176,17 @@ const OrderDetails = () => {
       <div className="order-summary">
         <h2><FaReceipt className="icon" /> Order Summary</h2>
         <div className="summary-details">
-          <div className="summary-row">
-            <span>Subtotal:</span>
-            <span>${formatPrice(order.subtotal)}</span>
-          </div>
-          <div className="summary-row">
-            <span>Shipping:</span>
-            <span>${formatPrice(order.shipping)}</span>
-          </div>
-          <div className="summary-row">
-            <span>Tax:</span>
-            <span>${formatPrice(order.tax)}</span>
-          </div>
           <div className="summary-row total">
-            <span>Total:</span>
-            <span>${formatPrice(order.total)}</span>
+            <span>Total Price:</span>
+            <span>${formatPrice(order.totalPrice)}</span>
           </div>
         </div>
       </div>
 
-      {order.shippingAddress && (
-        <div className="shipping-info">
-          <h2>Shipping Information</h2>
-          <p>{order.shippingAddress.name || 'N/A'}</p>
-          <p>{order.shippingAddress.street || 'N/A'}</p>
-          <p>
-            {order.shippingAddress.city || 'N/A'}, {order.shippingAddress.state || 'N/A'} {order.shippingAddress.zip || 'N/A'}
-          </p>
-          <p>{order.shippingAddress.country || 'N/A'}</p>
-        </div>
-      )}
+      <div className="user-info">
+        <h2>User Information</h2>
+        <p>User ID: {order.userId || 'N/A'}</p>
+      </div>
     </div>
   );
 };
