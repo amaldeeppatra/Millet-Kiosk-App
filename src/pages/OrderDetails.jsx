@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaChevronLeft, FaBox, FaMapMarkerAlt, FaUserAlt, FaPhone } from 'react-icons/fa';
+import { FaChevronLeft, FaBox, FaClock, FaReceipt } from 'react-icons/fa';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -23,6 +23,7 @@ const OrderDetails = () => {
       }
 
       try {
+        // Fetch order details using the orderId from URL params
         const response = await axios.get(`${API_URL}/order/${orderId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -53,21 +54,24 @@ const OrderDetails = () => {
     return price;
   };
 
-  // Helper function to calculate item total
-  const calculateItemTotal = (item) => {
-    const price = formatPrice(item.price);
-    return (parseFloat(price) * item.quantity).toFixed(2);
-  };
-
-  // Get the appropriate status color
+  // Get status badge color
   const getStatusColor = (status) => {
     switch(status) {
-      case 'DELIVERED': return 'green';
+      case 'COMPLETED': return 'green';
       case 'PLACED': return 'yellow';
-      case 'PREPARING': return 'blue';
-      case 'CANCELLED': return 'red';
       default: return 'gray';
     }
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-IN', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
@@ -105,15 +109,16 @@ const OrderDetails = () => {
                   {order.orderStatus}
                 </span>
               </div>
-              <p className="text-sm text-[#291C08]/70 mt-1">
-                {new Date(order.createdAt).toLocaleDateString('en-IN', { 
-                  year: 'numeric', 
-                  month: 'short', 
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
+              <div className="flex items-center mt-2 text-sm text-[#291C08]/70">
+                <FaClock className="mr-2" />
+                <p>{formatDate(order.createdAt)}</p>
+              </div>
+              {order.transactionId && (
+                <div className="flex items-center mt-1 text-sm text-[#291C08]/70">
+                  <FaReceipt className="mr-2" />
+                  <p>Transaction ID: {order.transactionId}</p>
+                </div>
+              )}
             </div>
 
             {/* Order Items */}
@@ -127,75 +132,30 @@ const OrderDetails = () => {
                         <FaBox className="text-[#291C08]/50" />
                       </div>
                       <div>
-                        <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-[#291C08]/70">₹{formatPrice(item.price)} × {item.quantity}</p>
+                        <p className="font-medium">{item.prodName}</p>
+                        <p className="text-sm text-[#291C08]/70">Quantity: {item.quantity}</p>
                       </div>
                     </div>
-                    <p className="font-semibold">₹{calculateItemTotal(item)}</p>
+                    <div className="text-right">
+                      <p className="text-xs text-[#291C08]/70">Product ID</p>
+                      <p className="text-sm">{item.prodId}</p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Delivery Address */}
-            {order.deliveryAddress && (
-              <div className="bg-white/40 rounded-xl p-4 shadow-sm">
-                <h3 className="font-semibold mb-3">Delivery Address</h3>
-                <div className="flex items-start">
-                  <FaMapMarkerAlt className="text-[#291C08]/70 mt-1 mr-2" />
-                  <div>
-                    <p className="font-medium">{order.deliveryAddress.addressType || 'Delivery Address'}</p>
-                    <p className="text-sm text-[#291C08]/70">
-                      {order.deliveryAddress.houseNo}, {order.deliveryAddress.street}, 
-                      {order.deliveryAddress.landmark && ` Near ${order.deliveryAddress.landmark},`} {order.deliveryAddress.city}, 
-                      {order.deliveryAddress.state} - {order.deliveryAddress.pincode}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center mt-3">
-                  <FaUserAlt className="text-[#291C08]/70 mr-2" />
-                  <p className="text-sm">{order.deliveryAddress.name}</p>
-                </div>
-                <div className="flex items-center mt-1">
-                  <FaPhone className="text-[#291C08]/70 mr-2" />
-                  <p className="text-sm">{order.deliveryAddress.phone}</p>
-                </div>
-              </div>
-            )}
-
             {/* Payment Summary */}
             <div className="bg-white/40 rounded-xl p-4 shadow-sm">
               <h3 className="font-semibold mb-3">Payment Summary</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <p className="text-[#291C08]/70">Subtotal</p>
-                  <p>₹{formatPrice(order.subtotalPrice)}</p>
-                </div>
-                <div className="flex justify-between">
-                  <p className="text-[#291C08]/70">Delivery Fee</p>
-                  <p>₹{formatPrice(order.deliveryFee) || '0.00'}</p>
-                </div>
-                {order.discount && (
-                  <div className="flex justify-between">
-                    <p className="text-[#291C08]/70">Discount</p>
-                    <p className="text-green-600">-₹{formatPrice(order.discount)}</p>
-                  </div>
-                )}
-                <div className="flex justify-between border-t pt-2 mt-3">
-                  <p className="font-bold">Total</p>
-                  <p className="font-bold">₹{formatPrice(order.totalPrice)}</p>
-                </div>
+              <div className="flex justify-between border-t pt-2">
+                <p className="font-bold">Total</p>
+                <p className="font-bold">₹{formatPrice(order.totalPrice)}</p>
               </div>
             </div>
 
-            {/* Payment Method */}
-            <div className="bg-white/40 rounded-xl p-4 shadow-sm">
-              <h3 className="font-semibold mb-2">Payment Method</h3>
-              <p>{order.paymentMethod || 'Cash on Delivery'}</p>
-            </div>
-
             {/* Action Buttons */}
-            {(order.orderStatus === 'PLACED' || order.orderStatus === 'PREPARING') && (
+            {order.orderStatus === 'PLACED' && (
               <div className="flex justify-center mt-4">
                 <button 
                   className="px-6 py-3 bg-red-500 text-white rounded-xl"
@@ -208,6 +168,29 @@ const OrderDetails = () => {
                 </button>
               </div>
             )}
+
+            {/* Track Order Button */}
+            <div className="flex justify-center">
+              <button 
+                className="px-6 py-3 bg-[#291C08] text-white rounded-xl w-full"
+                onClick={() => {
+                  // Add track order functionality or navigation
+                  alert('Track order functionality to be implemented');
+                }}
+              >
+                Track Order
+              </button>
+            </div>
+
+            {/* Back to Orders Button */}
+            <div className="flex justify-center">
+              <button 
+                className="px-6 py-3 border border-[#291C08] text-[#291C08] rounded-xl w-full"
+                onClick={() => navigate('/orders')}
+              >
+                Back to My Orders
+              </button>
+            </div>
           </div>
         ) : (
           <div className="text-center py-8">
