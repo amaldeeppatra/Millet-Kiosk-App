@@ -2,33 +2,40 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+// Define API_URL at the top level
+const API_URL = import.meta.env.VITE_API_URL;
+
 const ViewOrders = () => {
   const [orders, setOrders] = useState([]);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  const API_URL = import.meta.env.VITE_API_URL;
-  const token = Cookies.get('token');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
+      const token = Cookies.get('token');
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+      if (!userInfo || !userInfo.user || !token) {
+        setError('User not authenticated. Please log in.');
+        setLoading(false);
+        return;
+      }
+
       try {
-        const userInfo = JSON.parse(localStorage.getItem('userInfo')); // Assuming userInfo is stored in localStorage
+        const token = Cookies.get('token');
         const response = await axios.get(`${API_URL}/order/user/${userInfo.user._id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setOrders(response.data.orders);
+        setOrders(response.data.orders || []);
       } catch (err) {
-        setError(err.message || 'Failed to fetch orders.');
+        setError(err.response?.data?.message || 'Failed to fetch orders.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [API_URL, token]);
+  }, []);
 
   if (loading) {
     return <div>Loading orders...</div>;
