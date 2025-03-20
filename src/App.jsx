@@ -12,6 +12,7 @@ import ProtectedRoute from './utils/ProtectedRoute'
 import ProductsByCat from './pages/ProductsByCat'
 import OrderSuccess from './pages/OrderSuccess'
 import MyProfile from './pages/MyProfile'
+import ViewOrders from './pages/ViewOrders'
 
 
 const App=()=>{
@@ -83,6 +84,12 @@ const appRouter = createBrowserRouter(
           path: "/profile",
           element: (
             <MyProfile/>
+          )
+        },
+        {
+          path: "/orders",
+          element: (
+            <ViewOrders/>
           )
         }
       ]
