@@ -166,7 +166,7 @@ const MyProfile = () => {
       {/* Header */}
       <div className="pt-8 pb-4 px-4 flex items-center">
         <button 
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/homepage')}
           className="p-3 bg-[#291C08] rounded-full text-white mr-4"
         >
           <FaChevronLeft />
