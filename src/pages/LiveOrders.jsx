@@ -46,6 +46,14 @@ const StockItem = ({ product, onRestock }) => {
     return quantity <= 5 ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700";
   };
 
+  // Helper function to convert price if it's returned as a Decimal128 object
+  const getPrice = (price) => {
+    if (price && typeof price === "object" && price.$numberDecimal) {
+      return parseFloat(price.$numberDecimal);
+    }
+    return parseFloat(price);
+  };
+
   const handleRestockClick = () => {
     setShowDialog(true);
   };
@@ -58,18 +66,28 @@ const StockItem = ({ product, onRestock }) => {
   return (
     <>
       <div className={`p-3 rounded-md mb-2 ${getStockColor(product.stock)} transition-all hover:shadow-md`}>
-        <div className="font-medium">{product.prodName}</div>
-        <div className="flex justify-between items-center">
-          <span className="font-semibold">Stock: {product.stock}</span>
-          <span className="text-xs">ID: {product.prodId}</span>
-        </div>
-        <div className="mt-2 flex justify-end">
-          <button 
-            onClick={handleRestockClick}
-            className="bg-[#291C08] text-white px-3 py-1 rounded-full text-sm hover:bg-[#3a2a10] transition-colors"
-          >
-            Restock
-          </button>
+        <div className="flex items-center gap-3">
+          <img 
+            src={product.prodImg} 
+            alt={product.prodName} 
+            className="w-16 h-16 object-cover rounded-md"
+          />
+          <div className="flex-1">
+            <div className="font-medium">{product.prodName}</div>
+            <div className="flex justify-between items-center">
+              <span className="font-semibold">Stock: {product.stock}</span>
+              <span className="text-xs">ID: {product.prodId}</span>
+            </div>
+            <div className="flex justify-between items-center mt-1">
+              <span className="text-sm font-semibold">₹{getPrice(product.price)}</span>
+              <button 
+                onClick={handleRestockClick}
+                className="bg-[#291C08] text-white px-3 py-1 rounded-full text-sm hover:bg-[#3a2a10] transition-colors"
+              >
+                Restock
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
