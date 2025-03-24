@@ -215,7 +215,7 @@ const MyProfile = () => {
       </div>
 
       {/* Content Area */}
-      <div className="min-h-[400px] mx-4 bg-white/30 backdrop-blur-lg rounded-b-3xl p-6 shadow-lg">
+      <div className="min-h-[300px] mx-4 bg-white/30 backdrop-blur-lg rounded-b-3xl p-6 shadow-lg">
         {activeTab === 'profile' && (
           <div className="space-y-6">
             {/* Personal Info */}
@@ -236,17 +236,17 @@ const MyProfile = () => {
                   <p className="text-sm text-[#291C08]/70">Phone</p>
                   <p className="font-medium">{userInfo?.user?.phone || 'Not provided'}</p>
                 </div>
-                {userInfo?.user?.address && (
+                {/* {userInfo?.user?.address && (
                   <div>
                     <p className="text-sm text-[#291C08]/70">Address</p>
                     <p className="font-medium">{userInfo.user.address}</p>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
 
             {/* Preferences */}
-            <div>
+            {/* <div>
               <h3 className="text-lg font-semibold text-[#291C08] mb-3 border-b border-[#291C08]/30 pb-2">
                 Preferences
               </h3>
@@ -274,10 +274,10 @@ const MyProfile = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Account Actions */}
-            <div className="pt-4">
+            <div className="">
               {/* <button 
                 className="w-full py-3 flex items-center justify-center bg-[#291C08] text-white rounded-xl mb-3"
                 onClick={() => setActiveTab('orders')}
@@ -372,7 +372,7 @@ const MyProfile = () => {
             </h3>
             
             {/* Profile Picture Edit */}
-            <div className="flex flex-col items-center mb-4">
+            {/* <div className="flex flex-col items-center mb-4">
               <div className="relative">
                 {renderProfilePicture()}
                 <button className="absolute right-0 bottom-0 p-1 bg-[#291C08] rounded-full text-white text-xs">
@@ -380,7 +380,7 @@ const MyProfile = () => {
                 </button>
               </div>
               <p className="text-sm text-[#291C08]/70 mt-2">Change Profile Picture</p>
-            </div>
+            </div> */}
             
             <div>
               <label className="block text-sm text-[#291C08]/70 mb-1">Full Name</label>
@@ -399,7 +399,7 @@ const MyProfile = () => {
                 defaultValue={userInfo?.user?.email || ''}
                 disabled
               />
-              <p className="text-xs text-[#291C08]/60 mt-1">Email cannot be changed</p>
+              <p className="text-xs text-[#1e1507] mt-1">Email cannot be changed*</p>
             </div>
             
             <div>
@@ -411,14 +411,14 @@ const MyProfile = () => {
               />
             </div>
             
-            <div>
+            {/* <div>
               <label className="block text-sm text-[#291C08]/70 mb-1">Address</label>
               <textarea 
                 className="w-full px-3 py-2 bg-white/50 backdrop-blur-md border border-white/40 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#291C08]"
                 defaultValue={userInfo?.user?.address || ''}
                 rows="3"
               />
-            </div>
+            </div> */}
             
             <div className="pt-4 flex space-x-3">
               <button 
@@ -442,7 +442,7 @@ const MyProfile = () => {
       </div>
 
       {/* Notifications Section */}
-      <div className="mx-4 mt-6 bg-white/30 backdrop-blur-lg rounded-3xl p-6 shadow-lg">
+      {/* <div className="mx-4 mt-6 bg-white/30 backdrop-blur-lg rounded-3xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-[#291C08]">Notifications</h3>
           <FaBell className="text-[#291C08]" />
@@ -458,7 +458,7 @@ const MyProfile = () => {
             <p className="text-sm text-[#291C08]/70">Yesterday</p>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

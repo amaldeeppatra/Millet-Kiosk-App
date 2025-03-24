@@ -45,7 +45,7 @@ const CartPane = ({ cartItems, onIncrease, onDecrease, onRemove }) => {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[#291C08]">Your Cart</h3>
-                  <p className="text-sm text-gray-500">{totalItems} items · ₹{totalPrice.toFixed(2)}</p>
+                  <p className="text-sm text-gray-500">{totalItems} items</p>
                 </div>
               </div>
               <button 
@@ -140,8 +140,8 @@ const CartPane = ({ cartItems, onIncrease, onDecrease, onRemove }) => {
         >
           <FaShoppingCart />
           <span className="font-medium">{totalItems}</span>
-          <span className="font-medium">·</span>
-          <span className="font-medium">₹{totalPrice.toFixed(2)}</span>
+          {/* <span className="font-medium">·</span> */}
+          {/* <span className="font-medium">₹{totalPrice.toFixed(2)}</span> */}
         </motion.button>
       )}
     </div>
