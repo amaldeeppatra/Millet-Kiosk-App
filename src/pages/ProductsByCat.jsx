@@ -102,4 +102,4 @@ const ProductsByCat = () => {
   );
 };
 
-export default ProductsByCat
+export default ProductsByCat;
