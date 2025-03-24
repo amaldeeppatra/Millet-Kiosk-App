@@ -254,7 +254,7 @@ const CartPage = () => {
                     +
                   </button>
                 </div>
-                <span className="ml-4 font-medium text-white">â‚¹{item.price * item.quantity}</span>
+                <span className="ml-4 font-medium text-white">₹{item.price * item.quantity}</span>
               </div>
             </div>
           ))}
@@ -292,12 +292,12 @@ const CartPage = () => {
             {cartItems.map(item => (
               <div key={item.id} className="flex justify-between mb-3 text-lg">
                 <span>{item.prodName}</span>
-                <span>â‚¹{item.price * item.quantity}</span>
+                <span>₹{item.price * item.quantity}</span>
               </div>
             ))}
             <div className="border-t border-white mt-4 pt-4 flex justify-between font-bold text-xl">
               <span>Total</span>
-              <span>â‚¹{total}</span>
+              <span>₹{total}</span>
             </div>
           </div>
         </div>
