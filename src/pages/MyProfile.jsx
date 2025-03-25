@@ -6,7 +6,6 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import Skeleton from '@mui/material/Skeleton';
 import ParseJwt from '../utils/ParseJWT';
-import Footer from '../components/footer/Footer';
 
 const API_URL = import.meta.env.VITE_API_URL;
 

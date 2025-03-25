@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaChevronLeft, FaStar } from 'react-icons/fa';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import Skeleton from '@mui/material/Skeleton';
 import nutritionImg from '../resources/productpage/nutrition facts.png';
 import CartPane from '../components/homepage/CartPane';
+import ParseJwt from '../utils/ParseJWT';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -88,25 +90,35 @@ const ProductPage = () => {
   };
 
   // New function to handle user rating
+  const [userInfo, setUserInfo] = useState(null);
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token) {
+      try {
+        const decoded = ParseJwt(token);
+        setUserInfo(decoded);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
+
   const handleRating = async (rating) => {
     try {
-      // Send rating to backend
-      await axios.post(`${API_URL}/products/rate/${productId}`, { 
+      await axios.post(`${API_URL}/rate/${productId}`, { 
         rating,
-        userId: localStorage.getItem('userId') // Assuming you have user ID stored
+        userId: userInfo?.user?.userId
       });
-
-      // Update local state
+  
       setUserRating(rating);
-
-      // Optionally, you might want to refetch the product to get updated average rating
+      
+      // Optionally, refetch the product to display the updated average rating
       const response = await axios.get(`${API_URL}/products/id/${productId}`);
       setProduct(response.data);
     } catch (err) {
       console.error('Error submitting rating:', err);
-      // Optionally show error to user
     }
-  };
+  };  
 
   // Render method for star rating
   const renderStarRating = () => {
