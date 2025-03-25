@@ -41,7 +41,8 @@ const OrderSuccess = () => {
               const orderData = data.order; // Access the nested order object
               
               setOrderDetails({
-                orderId: orderData.orderId,
+                // orderId: orderData.orderId,
+                orderNo: orderData.orderNo,
                 date: new Date(orderData.createdAt).toLocaleString(),
                 items: orderData.items.length,
                 total: parseFloat(orderData.totalPrice.$numberDecimal || orderData.totalPrice),
@@ -143,8 +144,8 @@ const OrderSuccess = () => {
         </h3>
         <div className="space-y-3">
           <div className="flex justify-between">
-            <p className="text-[#291C08]/70">Order ID</p>
-            <p className="font-medium">{orderDetails?.orderId || 'N/A'}</p>
+            <p className="text-[#291C08]/70">Order Number</p>
+            <p className="font-medium">{orderDetails?.orderNo || 'N/A'}</p>
           </div>
           <div className="flex justify-between">
             <p className="text-[#291C08]/70">Date & Time</p>
@@ -191,8 +192,8 @@ const OrderSuccess = () => {
         </button>
       </div>
 
-      {/* Promotional Note */}
-      <div className="mx-auto max-w-md mt-8 text-center absolute bottom-5 left-7">
+      {/* Promotional Note - Moved to bottom after Continue Shopping button */}
+      <div className="mx-auto max-w-md mt-8 text-center">
         <p className="mt-2 text-[0.9rem] text-[#291C08]">
           Thank you for ordering! With ❤️ from Milet Hub Cafe.
         </p>

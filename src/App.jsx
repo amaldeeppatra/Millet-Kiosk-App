@@ -13,6 +13,7 @@ import ProductsByCat from './pages/ProductsByCat'
 import OrderSuccess from './pages/OrderSuccess'
 import MyProfile from './pages/MyProfile'
 import ViewOrders from './pages/ViewOrders'
+import OrderDetails from './pages/OrderDetails'
 
 
 const App=()=>{
@@ -90,6 +91,12 @@ const appRouter = createBrowserRouter(
           path: "/orders",
           element: (
             <ViewOrders/>
+          )
+        },
+        {
+          path: "/order/:orderId",
+          element: (
+            <OrderDetails/>
           )
         }
       ]

@@ -4,6 +4,7 @@ import { FaChevronLeft, FaStar } from 'react-icons/fa';
 import axios from 'axios';
 import Skeleton from '@mui/material/Skeleton';
 import nutritionImg from '../resources/productpage/nutrition facts.png';
+import CartPane from '../components/homepage/CartPane';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ProductPage = () => {
@@ -14,18 +15,85 @@ const ProductPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [quantity, setQuantity] = useState(0);
+  const [cartItems, setCartItems] = useState([]);
 
-  const incrementQuantity = () => {
-    setQuantity(quantity + 1);
-    localStorage.setItem(productId, quantity + 1);
+  // Utility functions for cart operations
+  const getProductId = (product) => product._id || product.prodId;
+  
+  const handleAddToCart = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) => {
+      const existing = prevItems.find(item => getProductId(item) === productId);
+      if (existing) {
+        return prevItems.map(item =>
+          getProductId(item) === productId 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        // Create a new item with only the necessary fields
+        const newItem = {
+          prodId: productId,
+          prodImg: product.prodImg,
+          prodName: product.prodName,
+          price: product.price,
+          quantity: 1,
+        };
+        return [...prevItems, newItem];
+      }
+    });
+  };
+  
+  const handleIncrease = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) =>
+      prevItems.map(item =>
+        getProductId(item) === productId 
+          ? { ...item, quantity: item.quantity + 1 } 
+          : item
+      )
+    );
+  };
+  
+  const handleDecrease = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) =>
+      prevItems
+        .map(item =>
+          getProductId(item) === productId 
+            ? { ...item, quantity: Math.max(0, item.quantity - 1) } 
+            : item
+        )
+        .filter(item => item.quantity > 0)
+    );
+  };
+  
+  const handleRemove = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prevItems) =>
+      prevItems.filter(item => getProductId(item) !== productId)
+    );
   };
 
-  const decrementQuantity = () => {
-    const newQuantity = quantity > 0 ? quantity - 1 : 0;
-    setQuantity(newQuantity);
-    localStorage.setItem(productId, newQuantity);
+  // Check if current product is in cart and get its quantity
+  const getCurrentProductQuantity = () => {
+    if (!product) return 0;
+    const cartItem = cartItems.find(item => getProductId(item) === productId);
+    return cartItem ? cartItem.quantity : 0;
   };
+
+  // Load cart items from localStorage
+  useEffect(() => {
+    const storedCart = localStorage.getItem('cartItems');
+    if (storedCart) {
+      setCartItems(JSON.parse(storedCart));
+    }
+  }, []);
+
+  // Update localStorage whenever cartItems changes
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -40,11 +108,6 @@ const ProductPage = () => {
     };
 
     fetchProduct();
-
-    const savedQuantity = localStorage.getItem(productId);
-    if (savedQuantity) {
-      setQuantity(parseInt(savedQuantity, 10));
-    }
   }, [productId]);
 
   if (loading) {
@@ -90,13 +153,16 @@ const ProductPage = () => {
     );
   }
 
+  const currentProduct = product[0];
+  const quantity = getCurrentProductQuantity();
+
   return (
-    <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center">
+    <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center pb-20">
       {/* Product Image Container */}
       <div className="relative">
         <img 
-          src={product[0].prodImg} 
-          alt={product[0].prodName} 
+          src={currentProduct.prodImg} 
+          alt={currentProduct.prodName} 
           className="w-full object-cover rounded-b-[50px]"
         />
         <button 
@@ -109,28 +175,28 @@ const ProductPage = () => {
 
       {/* Product Details */}
       <div className="px-4 py-6">
-        <h1 className="text-3xl text-[#6A3A3A] font-bold mb-4">{product[0].prodName}</h1>
-        <p className="text-lg mb-4">{product[0].prodDesc}</p>
+        <h1 className="text-3xl text-[#6A3A3A] font-bold mb-4">{currentProduct.prodName}</h1>
+        <p className="text-lg mb-4">{currentProduct.prodDesc}</p>
         
         {/* Price, Rating and Add Button Row */}
         <div className="flex justify-between items-center mb-6">
           {/* Left side - Price */}
           <p className="text-lg text-[#6A3A3A] font-semibold">
-            Price: Rs.{product[0].price}
+            Price: Rs.{currentProduct.price}
           </p>
           
           {/* Right side - Rating and Add/Quantity */}
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center px-5 py-1 bg-[#6A3A3A] text-white rounded-[20px]">
               <FaStar className="text-yellow-500 mr-1" />
-              <p className="text-lg font-semibold">{product[0].rating}</p>
+              <p className="text-lg font-semibold">{currentProduct.rating}</p>
             </div>
             
             {/* Quantity Controls */}
             <div className="flex items-center">
               {quantity === 0 ? (
                 <button
-                  onClick={incrementQuantity}
+                  onClick={() => handleAddToCart(currentProduct)}
                   className="px-8 py-2 bg-[#6A3A3A] text-white font-bold rounded-[20px]"
                 >
                   ADD
@@ -138,7 +204,7 @@ const ProductPage = () => {
               ) : (
                 <>
                   <button
-                    onClick={decrementQuantity}
+                    onClick={() => handleDecrease(currentProduct)}
                     className="px-4 py-2 bg-[#6A3A3A] text-white rounded-full mx-1"
                   >
                     -
@@ -147,7 +213,7 @@ const ProductPage = () => {
                     {quantity}
                   </span>
                   <button
-                    onClick={incrementQuantity}
+                    onClick={() => handleIncrease(currentProduct)}
                     className="px-4 py-2 bg-[#6A3A3A] text-white rounded-full mx-1"
                   >
                     +
@@ -169,11 +235,22 @@ const ProductPage = () => {
         
         {/* Cart Button - Centered */}
         <div className="flex justify-center">
-          <button className="px-8 py-2 bg-[#6A3A3A] text-white rounded">
+          <button 
+            className="px-8 py-2 bg-[#6A3A3A] text-white rounded"
+            onClick={() => navigate('/cart')}
+          >
             {quantity > 0 ? "Go to Cart" : "Show the Cart"}
           </button>
         </div>
       </div>
+
+      {/* Render the cart pane fixed at the bottom */}
+      <CartPane 
+        cartItems={cartItems} 
+        onIncrease={handleIncrease}
+        onDecrease={handleDecrease}
+        onRemove={handleRemove}
+      />
     </div>
   );
 };
