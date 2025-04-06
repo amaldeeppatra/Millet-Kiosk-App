@@ -167,7 +167,9 @@ const OrderCard = ({ order, onAccept }) => {
         <span className="text-sm font-semibold text-gray-800">
           Total: ₹{getTotalPrice(order.totalPrice)}
         </span>
-        <span className="text-sm text-gray-600">User: {order.userId.name}</span>
+        <span className="text-sm text-gray-600">
+          User ID: {order.userId.name}
+        </span>
         <span className="text-sm text-gray-500 mr-4">
           Status: {order.orderStatus}
         </span>
@@ -244,43 +246,36 @@ const LiveOrders = () => {
     );
   };
 
-  // Handle restock functionality
+  // Handle restock functionality with new API call
   const handleRestock = (prodId, amount) => {
-    // Here you would typically call an API to update the stock
-    // For now, we'll just simulate it by updating the UI
-    setProducts(
-      (prevProducts) =>
-        prevProducts
-          .map((product) =>
-            product.prodId === prodId
-              ? { ...product, stock: product.stock + amount }
-              : product
-          )
-          .sort((a, b) => a.stock - b.stock) // Re-sort after update
-    );
-
-    // In a real app, you would call your API like:
-    /*
-    fetch(`http://localhost:5000/api/products/restock/${prodId}`, {
+    fetch(`http://localhost:5000/product/restock/${prodId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ quantity: amount }),
     })
-      .then(response => response.json())
-      .then(data => {
-        // Update the products state with the new data
-        setProducts(prevProducts => 
-          prevProducts.map(product => 
-            product.prodId === prodId ? { ...product, stock: data.stock } : product
-          ).sort((a, b) => a.stock - b.stock)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to restock product");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        // Update the product's stock using the data returned from the API
+        setProducts((prevProducts) =>
+          prevProducts
+            .map((product) =>
+              product.prodId === prodId
+                ? { ...product, stock: data.stock }
+                : product
+            )
+            .sort((a, b) => a.stock - b.stock)
         );
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error restocking product:", error);
       });
-    */
   };
 
   if (loading) {
