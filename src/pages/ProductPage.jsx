@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaChevronLeft, FaStar } from 'react-icons/fa';
 import axios from 'axios';
+import Cookies from 'js-cookie';
 import Skeleton from '@mui/material/Skeleton';
 import nutritionImg from '../resources/productpage/nutrition facts.png';
 import CartPane from '../components/homepage/CartPane';
+import ParseJwt from '../utils/ParseJWT';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ProductPage = () => {
@@ -16,6 +19,10 @@ const ProductPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cartItems, setCartItems] = useState([]);
+  
+  // New state for user rating
+  const [userRating, setUserRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
 
   // Utility functions for cart operations
   const getProductId = (product) => product._id || product.prodId;
@@ -80,6 +87,59 @@ const ProductPage = () => {
     if (!product) return 0;
     const cartItem = cartItems.find(item => getProductId(item) === productId);
     return cartItem ? cartItem.quantity : 0;
+  };
+
+  // New function to handle user rating
+  const [userInfo, setUserInfo] = useState(null);
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token) {
+      try {
+        const decoded = ParseJwt(token);
+        setUserInfo(decoded);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
+
+  const handleRating = async (rating) => {
+    try {
+      await axios.post(`${API_URL}/rate/${productId}`, { 
+        rating,
+        userId: userInfo?.user?.userId
+      });
+  
+      setUserRating(rating);
+      
+      // Optionally, refetch the product to display the updated average rating
+      const response = await axios.get(`${API_URL}/products/id/${productId}`);
+      setProduct(response.data);
+    } catch (err) {
+      console.error('Error submitting rating:', err);
+    }
+  };  
+
+  // Render method for star rating
+  const renderStarRating = () => {
+    return (
+      <div className="flex items-center justify-center space-x-1 my-4">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <FaStar
+            key={star}
+            size={30}
+            className={`cursor-pointer transition-colors duration-200 ${
+              (hoveredRating || userRating) >= star 
+                ? 'text-yellow-500' 
+                : 'text-gray-300'
+            }`}
+            onMouseEnter={() => setHoveredRating(star)}
+            onMouseLeave={() => setHoveredRating(0)}
+            onClick={() => handleRating(star)}
+          />
+        ))}
+      </div>
+    );
   };
 
   // Load cart items from localStorage
@@ -189,7 +249,11 @@ const ProductPage = () => {
           <div className="flex flex-col items-end gap-2">
             <div className="flex items-center px-5 py-1 bg-[#6A3A3A] text-white rounded-[20px]">
               <FaStar className="text-yellow-500 mr-1" />
-              <p className="text-lg font-semibold">{currentProduct.rating}</p>
+              <p className="text-lg font-semibold">
+                {currentProduct.rating 
+                  ? currentProduct.rating.toFixed(1) 
+                  : 'No ratings'}
+              </p>
             </div>
             
             {/* Quantity Controls */}
@@ -222,6 +286,17 @@ const ProductPage = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* New Rating Section */}
+        <div className="text-center mb-6">
+          <h3 className="text-xl text-[#6A3A3A] mb-2">Rate this Product</h3>
+          {renderStarRating()}
+          {userRating > 0 && (
+            <p className="text-sm text-gray-600">
+              You rated this product {userRating} star{userRating !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
         
         {/* Centered Nutrition Image */}

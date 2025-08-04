@@ -14,6 +14,7 @@ import OrderSuccess from './pages/OrderSuccess'
 import MyProfile from './pages/MyProfile'
 import ViewOrders from './pages/ViewOrders'
 import OrderDetails from './pages/OrderDetails'
+import ErrorPage from './pages/ErrorPage'
 
 
 const App=()=>{
@@ -98,6 +99,10 @@ const appRouter = createBrowserRouter(
           element: (
             <OrderDetails/>
           )
+        },
+        {
+          path: "*",
+          element: <ErrorPage/>
         }
       ]
     }

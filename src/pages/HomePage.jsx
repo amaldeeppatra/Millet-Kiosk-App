@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
 import Cookies from 'js-cookie';
 import ParseJwt from '../utils/ParseJWT';
 import { CgProfile } from "react-icons/cg";
@@ -13,47 +12,25 @@ import Footer from '../components/footer/Footer';
 import CartPane from '../components/homepage/CartPane';
 import MissionShaktiCard from '../components/homepage/MissionShaktiCard';
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 const HomePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Extract token from query parameters (if any) and store it in cookies
+  // Extract token from query parameters and store it in cookies
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const tokenFromUrl = queryParams.get('token');
     if (tokenFromUrl) {
-      // Cookies.set('token', tokenFromUrl, { secure: true, sameSite: 'none' });
       Cookies.set('token', tokenFromUrl, { secure: true, sameSite: 'none', expires: 1 / 48 }); // 30 minutes expiration
-      // Remove the token from the URL to prevent it from lingering
       navigate(location.pathname, { replace: true });
     }
   }, [location, navigate]);
 
-  // Now, retrieve the token from cookies
   const token = Cookies.get('token');
   console.log('Token:', token);
 
-  // State variables and other logic
   const [loading, setLoading] = useState(true);
   const [cartItems, setCartItems] = useState([]);
-
-  // Check if the user is authenticated
-  // useEffect(() => {
-  //   axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
-  //     .then(response => {
-  //       console.log('User authenticated:', response.data);
-  //       // Optionally, redirect if needed
-  //       // navigate('/homepage');
-  //     })
-  //     .catch(error => {
-  //       console.error('User not authenticated:', error);
-  //     })
-  //     .finally(() => {
-  //       setLoading(false);
-  //     });
-  // }, [navigate]);
 
   // Simulate data fetching delay
   useEffect(() => {
@@ -76,11 +53,72 @@ const HomePage = () => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
 
+  // State for recent searches (initialize from localStorage)
+  const [recentSearches, setRecentSearches] = useState(() => {
+    const stored = localStorage.getItem('recentSearches');
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  // State and logic for search
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const popularSearches = ["Samosa", "Coffee", "Kodo Momo", "Sandwich"];
+
+  const handleSearch = () => {
+    if (searchTerm.trim() !== "") {
+      // Update recent searches, ensuring no duplicates and limit to 4
+      const updatedSearches = [searchTerm, ...recentSearches.filter(item => item !== searchTerm)];
+      if (updatedSearches.length > 4) {
+        updatedSearches.pop(); // remove the oldest search if more than 4
+      }
+      setRecentSearches(updatedSearches);
+      localStorage.setItem("recentSearches", JSON.stringify(updatedSearches));
+
+      // Navigate to search results page
+      navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+      setSearchOpen(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // Other state and handlers...
+  const [userInfo, setUserInfo] = useState(null);
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token) {
+      try {
+        const decoded = ParseJwt(token);
+        setUserInfo(decoded);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
+
+  // Carousel auto-change effect and other UI states
+  const slides = [
+    { image: banner1, alt: 'Banner 1', title: 'Welcome to Millet Hub Cafe', subtitle: '' },
+    { image: banner2, alt: 'Banner 2', title: 'Title for Banner 2', subtitle: 'Subtitle for Banner 2' },
+  ];
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
   // Utility functions for cart operations
   const getProductId = (product) => product._id || product.prodId;
   
   const handleAddToCart = (product) => {
-    // Assuming product.prodId exists or you can use getProductId(product)
     const productId = product.prodId; 
     setCartItems((prevItems) => {
       const existing = prevItems.find(item => item.prodId === productId);
@@ -91,11 +129,10 @@ const HomePage = () => {
             : item
         );
       } else {
-        // Create a new item with only the necessary fields
         const newItem = {
           prodId: product.prodId,
           prodImg: product.prodImg,
-          prodName: product.prodName, // mapping prodName to name
+          prodName: product.prodName,
           price: product.price,
           quantity: 1,
         };
@@ -103,7 +140,6 @@ const HomePage = () => {
       }
     });
   };
-  
   
   const handleIncrease = (product) => {
     const productId = getProductId(product);
@@ -136,102 +172,42 @@ const HomePage = () => {
     );
   };
 
-  // Carousel slides and other UI state variables
-  const slides = [
-    { image: banner1, alt: 'Banner 1', title: 'Welcome to Millet Hub Cafe', subtitle: '' },
-    { image: banner2, alt: 'Banner 2', title: 'Title for Banner 2', subtitle: 'Subtitle for Banner 2' },
-  ];
-  const offers = [
-    { id: 1, title: "Order Now!!!", image: banner1 },
-    { id: 2, title: "Flat ₹50 Off", image: banner2 },
-  ];
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const recentSearches = ["Samosa", "Jalebi", "Cupcakes"];
-  const popularSearches = ["Samosa", "Cupcakes", "Jalebi"];
-
-  const handleSearch = () => {
-    if (searchTerm.trim() !== "") {
-      navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
-      setSearchOpen(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
-  const [userInfo, setUserInfo] = useState(null);
-  useEffect(() => {
-    const token = Cookies.get('token');
-    if (token){
-      try{
-        // const decoded = parseJwt(token);
-        const decoded = ParseJwt(token);
-        setUserInfo(decoded);
-      } catch (error) {
-        console.error('Error decoding token:', error);
-      }
-    }
-  }, []);
-
-  // Slide carousel auto-change effect
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [slides.length]);
-
-
+  // Render profile picture logic remains the same
   const renderProfilePicture = () => {
-      if (userInfo?.user?.avatar) {
-        // If profile picture exists in the token, display it
-        return (
-          <img 
-            src={userInfo.user.avatar} 
-            alt="Profile"
-            className="size-8 rounded-full object-cover"
-          />
-        );
-      } else if (userInfo?.user?.name) {
-        // If no profile picture but name exists, show initials
-        const initials = userInfo.user.name
-          .split(' ')
-          .map(name => name[0])
-          .join('')
-          .toUpperCase();
-        
-        return (
-          <div className="size-8 rounded-full object-cover">
-            {initials}
-          </div>
-        );
-      } else {
-        // Fallback to icon
-        return (
-          <div className="bg-[#291C08] p-2 rounded-full shadow-md">
-            <CgProfile className="text-4xl text-white" />
-          </div>
-        );
-      }
-    };
-
+    if (userInfo?.user?.avatar) {
+      return (
+        <img 
+          src={userInfo.user.avatar} 
+          alt="Profile"
+          className="size-8 rounded-full object-cover"
+        />
+      );
+    } else if (userInfo?.user?.name) {
+      const initials = userInfo.user.name
+        .split(' ')
+        .map(name => name[0])
+        .join('')
+        .toUpperCase();
+      
+      return (
+        <div className="size-8 rounded-full object-cover">
+          {initials}
+        </div>
+      );
+    } else {
+      return (
+        <div className="bg-[#291C08] p-2 rounded-full shadow-md">
+          <CgProfile className="text-4xl text-white" />
+        </div>
+      );
+    }
+  };
 
   const handleLogout = () => {
-      // Clear cookies and local storage
-      Cookies.remove('token');
-      
-      // Redirect to login page
-      navigate('/login');
-    };
+    Cookies.remove('token');
+    navigate('/login');
+  };
 
-  // Show skeletons if loading
   if (loading) {
     return (
       <div className="min-h-screen p-4 space-y-4">
@@ -249,7 +225,6 @@ const HomePage = () => {
       {/* Navbar */}
       <header className="bg-opacity-90 p-4 relative z-50">
         <nav className="flex items-center justify-between relative">
-          {/* Hamburger Menu */}
           <div className="relative">
             <button 
               onClick={() => setMenuOpen(!menuOpen)} 
@@ -275,8 +250,6 @@ const HomePage = () => {
               </div>
             )}
           </div>
-
-          {/* Search Bar */}
           <div className="flex-1 mx-4">
             <input
               type="text"
@@ -285,19 +258,7 @@ const HomePage = () => {
               className="w-full px-3 py-1 bg-white/30 backdrop-blur-md border border-white/40 text-black placeholder-black rounded-[70px] focus:outline-none focus:ring-2 focus:ring-[#291C08]"
             />
           </div>
-
-          {/* Profile Icon */}
           <div className="z-50">
-            {/* <CgProfile 
-              style={{ 
-                fontSize: '2rem', 
-                backgroundColor: '#291C08', 
-                color: 'white', 
-                borderRadius: '50px', 
-                padding: '2px' 
-              }} 
-            /> */}
-            {/* <img src={userInfo.user.avatar} alt="" className="size-8 rounded-full object-cover"/> */}
             {renderProfilePicture()}
           </div>
         </nav>
@@ -403,23 +364,11 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* <div>
-        {userInfo ? (
-          <div>
-            <h3>User Information</h3>
-            <pre>{JSON.stringify(userInfo.user.userId, null, 2)}</pre>
-            <pre>{JSON.stringify(userInfo.user.name, null, 2)}</pre>
-            <pre>{JSON.stringify(userInfo.user.email, null, 2)}</pre>
-          </div>
-        ) : (
-          <p>No user information found.</p>
-        )}
-      </div> */}
-
       {/* Offers Scrollable Carousel */}
       <div className="mt-10 px-4">
         <div className="flex space-x-4 overflow-x-auto pb-4 snap-x snap-mandatory">
-          {offers.map((offer) => (
+          {[{ id: 1, title: "Order Now!!!", image: banner1 },
+            { id: 2, title: "Flat ₹50 Off", image: banner2 }].map((offer) => (
             <div 
               key={offer.id} 
               className="min-w-[220px] snap-start bg-[#291C08] rounded-3xl shadow-md pl-4"
@@ -452,7 +401,7 @@ const HomePage = () => {
         onRemove={handleRemove}
       />
 
-      {/* millet shakti program */}
+      {/* Millet Shakti Program */}
       <MissionShaktiCard/>
 
       {/* Footer */}
