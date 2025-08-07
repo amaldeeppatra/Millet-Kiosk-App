@@ -15,6 +15,9 @@ import MyProfile from './pages/MyProfile'
 import ViewOrders from './pages/ViewOrders'
 import OrderDetails from './pages/OrderDetails'
 import ErrorPage from './pages/ErrorPage'
+import SellerPage from './pages/SellerPage'
+import AdminPage from './pages/AdminPage'
+import LoginRolePrompt from './pages/LoginRolePrompt'
 
 
 const App=()=>{
@@ -103,6 +106,18 @@ const appRouter = createBrowserRouter(
         {
           path: "*",
           element: <ErrorPage/>
+        },
+        {
+          path: "/seller",
+          element: <SellerPage/>
+        },
+        {
+          path: "/admin",
+          element: <AdminPage/>
+        },
+        {
+          path: "/choose-role",
+          element: <LoginRolePrompt/>
         }
       ]
     }
