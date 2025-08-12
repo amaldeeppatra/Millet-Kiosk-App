@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import CartPane from '../components/homepage/CartPane';
+import { CgProfile } from 'react-icons/cg';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// Predefined products for fallback
 const predefinedProducts = {
     'Millet': [
         { prodId: 1, prodName: 'Millet Flour', price: 50, prodImg: '/api/placeholder/120/120' },
@@ -38,10 +40,9 @@ const ProductsByCat = () => {
         { name: 'Desserts', icon: '/src/resources/categories/baked.png', apiPath: 'Dessert' },
         { name: 'Fast Foods', icon: '/src/resources/categories/fast food.jpg', apiPath: 'Fast Food' }
     ];
-
-    const user = {
-        name: 'Jane Doe',
-        profilePicture: '/api/placeholder/40/40'
+    
+    const userInfo = {
+        user: { name: 'Jane Doe' }
     };
 
     const [selectedCategory, setSelectedCategory] = useState('Millet');
@@ -69,7 +70,8 @@ const ProductsByCat = () => {
     }, [cartItems]);
 
     useEffect(() => {
-        let isMounted = true;
+        const controller = new AbortController(); 
+        
         const fetchProducts = async () => {
             setLoading(true);
             setError(null);
@@ -81,7 +83,7 @@ const ProductsByCat = () => {
             if (currentCategory && API_URL) {
                 try {
                     const fullUrl = `${API_URL}/products/cat/${currentCategory.apiPath}`;
-                    const response = await axios.get(fullUrl, { timeout: 5000 });
+                    const response = await axios.get(fullUrl, { timeout: 5000, signal: controller.signal });
                     if (Array.isArray(response.data)) {
                         productsToSet = response.data.map(product => ({
                             ...product,
@@ -91,17 +93,23 @@ const ProductsByCat = () => {
                         }));
                     }
                 } catch (apiError) {
-                    console.warn('API fetch failed, using predefined products', apiError);
+                    if (axios.isCancel(apiError)) {
+                        console.log('Request canceled:', apiError.message);
+                    } else {
+                        console.warn('API fetch failed, using predefined products', apiError);
+                        setError('Could not fetch latest items. Showing available products.');
+                    }
                 }
             }
             
-            if (isMounted) {
-                setProducts(productsToSet);
-                setLoading(false);
-            }
+            setProducts(productsToSet);
+            setLoading(false);
         };
         fetchProducts();
-        return () => { isMounted = false; };
+        
+        return () => { 
+            controller.abort(); 
+        };
     }, [selectedCategory]);
 
     const getProductId = (product) => product._id || product.prodId;
@@ -121,29 +129,27 @@ const ProductsByCat = () => {
 
     const handleIncrease = (product) => {
         const productId = getProductId(product);
-        setCartItems((prevItems = []) =>
-            prevItems.map(item =>
-                getProductId(item) === productId ? { ...item, quantity: item.quantity + 1 } : item
-            )
-        );
+        setCartItems(prevItems => prevItems.map(item => 
+            getProductId(item) === productId ? { ...item, quantity: item.quantity + 1 } : item
+        ));
     };
-    
+
     const handleDecrease = (product) => {
         const productId = getProductId(product);
-        setCartItems((prevItems = []) =>
-            prevItems
-                .map(item =>
+        setCartItems(prevItems => {
+            const existingItem = prevItems.find(item => getProductId(item) === productId);
+            if (existingItem && existingItem.quantity > 1) {
+                return prevItems.map(item => 
                     getProductId(item) === productId ? { ...item, quantity: item.quantity - 1 } : item
-                )
-                .filter(item => item.quantity > 0)
-        );
+                );
+            }
+            return prevItems.filter(item => getProductId(item) !== productId);
+        });
     };
 
     const handleRemove = (product) => {
         const productId = getProductId(product);
-        setCartItems((prevItems = []) =>
-            prevItems.filter(item => getProductId(item) !== productId)
-        );
+        setCartItems(prevItems => prevItems.filter(item => getProductId(item) !== productId));
     };
 
     const filteredProducts = Array.isArray(products)
@@ -157,34 +163,62 @@ const ProductsByCat = () => {
         setSearchTerm(term);
         setSearchOpen(false);
     };
+    
+    const renderProfilePicture = () => {
+        if (userInfo?.user?.avatar) {
+            return (
+                <img
+                    src={userInfo.user.avatar}
+                    alt="Profile"
+                    className="size-8 rounded-full object-cover"
+                />
+            );
+        } else if (userInfo?.user?.name) {
+            const initials = userInfo.user.name
+                .split(' ')
+                .map(name => name[0])
+                .join('')
+                .toUpperCase();
+            return (
+                <div className="size-8 rounded-full bg-[#291C08] text-white flex items-center justify-center font-bold text-sm">
+                    {initials}
+                </div>
+            );
+        } else {
+            return (
+                <div className="bg-[#291C08] p-2 rounded-full shadow-md">
+                    <CgProfile className="text-4xl text-white" />
+                </div>
+            );
+        }
+    };
 
     return (
-        <div className="flex flex-col h-screen bg-[url('/resources/homepage/Homepage.png')] bg-repeat">
-            <div className="absolute inset-0 bg-amber-50 bg-opacity-90"></div>
-            <div className="flex flex-col h-screen z-10 relative">
-                <div className="flex items-center px-4 py-2 gap-3">
+        <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center px-4 pb-8">
+            <div className="flex flex-col h-screen relative">
+                
+                <header className="flex items-center py-2 gap-3">
                     <button onClick={() => navigate(-1)} className="text-amber-800 text-2xl font-bold">
                         &lt;
                     </button>
-                    {/* MODIFICATION: Changed bg and shadow for a deeper, softer look */}
-                    <div className="flex-1 bg-slate-100 rounded-full px-4 py-2 flex items-center gap-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]">
-                        <span className="text-gray-500">🔍</span>
+                    <div className="flex-1">
                         <input
                             type="text"
+                            placeholder="Search items..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Search items..."
-                            className="bg-transparent outline-none flex-1 text-gray-800"
                             onFocus={() => setSearchOpen(true)}
+                            className="w-full px-3 py-1.5 bg-white/30 backdrop-blur-md border border-white/40 text-black placeholder-black rounded-full focus:outline-none focus:ring-2 focus:ring-[#291C08]"
                         />
                     </div>
-                    <button className="w-9 h-9 rounded-full overflow-hidden">
-                        <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
-                    </button>
-                </div>
+                    <div className="z-50">
+                        {renderProfilePicture()}
+                    </div>
+                </header>
                 
-                <div className="px-4 py-2 text-sm text-gray-700">
+                <div className="py-2 text-sm text-gray-700">
                     {loading ? 'Finding items...' : `${filteredProducts.length} items found:`}
+                    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
                 </div>
                 
                 <div className="flex flex-1 overflow-hidden">
@@ -199,17 +233,15 @@ const ProductsByCat = () => {
                         ))}
                     </div>
                     
-                    <div className="flex-1 bg-[url('./resources/homepage/Homepage.png')] bg-repeat bg-center overflow-y-auto">
+                    <main className="flex-1 overflow-y-auto">
                         {loading ? (
                             <div className="flex items-center justify-center h-full"><p>Loading...</p></div>
-                        ) : error ? (
-                            <div className="flex items-center justify-center h-full text-red-500 p-4 text-center"><p>{error}</p></div>
                         ) : filteredProducts.length === 0 ? (
                             <div className="flex items-center justify-center h-full"><p>No products found.</p></div>
                         ) : (
-                            <div className="grid grid-cols-2 gap-4 p-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 {filteredProducts.map((item) => (
-                                    <div key={item.prodId} className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
+                                    <div key={getProductId(item)} className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
                                         <img src={item.prodImg} alt={item.prodName} className="h-24 w-24 rounded-md mb-2 object-cover"/>
                                         <div className="text-sm font-medium text-center mb-2">{item.prodName}</div>
                                         <div className="flex items-center justify-between w-full mt-auto">
@@ -220,7 +252,7 @@ const ProductsByCat = () => {
                                 ))}
                             </div>
                         )}
-                    </div>
+                    </main>
                 </div>
 
                 <CartPane cartItems={cartItems} onIncrease={handleIncrease} onDecrease={handleDecrease} onRemove={handleRemove}/>
