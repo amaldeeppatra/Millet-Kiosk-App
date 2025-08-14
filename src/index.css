@@ -18,3 +18,12 @@
   font-weight: 400;
   font-style: normal;
 }
+
+:root {
+  --primary-color: #DE6B18;
+  --secondary-color: #F3D1B0;
+  --accent-color: #FFE7D1;
+  --background-color: #FFFBF8;
+  --text-color: #212121;
+  --tertiary-color: #8C3F0B;
+}
