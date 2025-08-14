@@ -1,5 +1,6 @@
 import React from 'react'
-import MissionShaktilogo from '../../resources/homepage/unnamed.png'
+// import MissionShaktilogo from '../../resources/homepage/unnamed.png'
+import MissionShaktilogo from '../../resources/homepage/ShreeAnnaAbhiyanLogo.png'
 
 const MissionShaktiCard = () => {
   return (
