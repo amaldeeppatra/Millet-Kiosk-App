@@ -21,6 +21,7 @@ const AdminPage = () => {
 
   // Auth
   const [userInfo, setUserInfo] = useState(null);
+  const [token, setToken] = useState(Cookies.get("token"));
 
   // UI state
   const [loading, setLoading] = useState(true);
@@ -94,11 +95,12 @@ const AdminPage = () => {
 
   // Initial data fetch and auth
   useEffect(() => {
-    const token = Cookies.get("token");
-    if (token) {
+    const userToken = Cookies.get("token");
+    if (userToken) {
       try {
-        const decoded = ParseJwt(token);
+        const decoded = ParseJwt(userToken);
         setUserInfo(decoded);
+        setToken(userToken);
       } catch (e) {
         Cookies.remove("token");
         navigate("/login");
@@ -111,7 +113,7 @@ const AdminPage = () => {
 
   // Fetch data
   useEffect(() => {
-    if (!loading) {
+    if (!loading && token) {
       fetchProducts();
       fetchSellers();
       fetchNotifications();
@@ -120,7 +122,7 @@ const AdminPage = () => {
       }, 30000);
       return () => clearInterval(notificationInterval);
     }
-  }, [loading]);
+  }, [loading, token]);
 
   const fetchProducts = async () => {
     try {
@@ -141,7 +143,9 @@ const AdminPage = () => {
 
   const fetchSellers = async () => {
     try {
-      const res = await axios.get(`${API_URL}/admin/sellers`, {});
+      const res = await axios.get(`${API_URL}/admin/sellers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setSellers(res.data.sellers || []);
     } catch (error) {
       console.error("Error fetching sellers:", error);
@@ -150,7 +154,9 @@ const AdminPage = () => {
 
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get(`${API_URL}/admin/notifications`, {});
+      const res = await axios.get(`${API_URL}/admin/notifications`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const fetchedNotifications = res.data.notifications || [];
       setNotifications(fetchedNotifications);
       checkForNewNotifications(fetchedNotifications);
@@ -212,7 +218,9 @@ const AdminPage = () => {
         prodNutrients: prodForm.prodNutrients || "Not Available",
       };
 
-      await axios.post(`${API_URL}/product/new`, productData, {});
+      await axios.post(`${API_URL}/product/new`, productData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setProdForm({
         prodId: "",
@@ -251,30 +259,37 @@ const AdminPage = () => {
     });
   };
 
-  // *** MODIFIED: Save inline edit now sends the correct data format ***
+  // Save inline edit
   const handleEditSave = async () => {
+    if (!editingProduct) return;
+
     try {
       const updateData = {
-        ...editingProduct,
-        // Re-wrap the price and rating into the $numberDecimal format
-        price: { $numberDecimal: String(editingProduct.price) },
-        stock: parseInt(editingProduct.stock),
-        rating: { $numberDecimal: String(editingProduct.rating || 0) },
+        prodName: editingProduct.prodName,
+        prodImg: editingProduct.prodImg,
+        prodDesc: editingProduct.prodDesc,
+        category: editingProduct.category,
+        prodIngredients: editingProduct.prodIngredients,
+        prodNutrients: editingProduct.prodNutrients,
+        price: parseFloat(editingProduct.price),
+        stock: parseInt(editingProduct.stock, 10),
       };
 
-      await axios.put(
+      await axios.patch(
         `${API_URL}/product/update/${editingProduct.prodId}`,
         updateData,
-        {}
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
+
       setEditingProdId(null);
       setEditingProduct(null);
       fetchProducts();
       showMessage("success", "Product updated successfully!");
     } catch (error) {
-      // Improved error logging
-      console.error("Error updating product:", error.response || error);
-      showMessage("error", "Error updating product. Check console for details.");
+      console.error("Error updating product:", error.response?.data || error.message);
+      showMessage("error", `Update failed: ${error.response?.data?.message || 'Check console for details.'}`);
     }
   };
 
@@ -290,7 +305,9 @@ const AdminPage = () => {
       return;
 
     try {
-      await axios.delete(`${API_URL}/product/delete/${customProdId}`, {});
+      await axios.delete(`${API_URL}/product/delete/${customProdId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setProducts(products.filter((p) => p._id !== mongoId));
       showMessage("success", "Product deleted successfully!");
     } catch (error) {
@@ -313,9 +330,9 @@ const AdminPage = () => {
       await axios.post(
         `${API_URL}/admin/sellers`,
         { sellerId: newSellerId },
-        {}
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setSellers((prev) => [...prev, newSellerId]);
+      fetchSellers();
       setNewSellerId("");
       showMessage("success", "Seller added successfully!");
     } catch (error) {
@@ -327,7 +344,9 @@ const AdminPage = () => {
     if (!confirm("Are you sure you want to remove this seller?")) return;
 
     try {
-      await axios.delete(`${API_URL}/admin/sellers/${sid}`, {});
+      await axios.delete(`${API_URL}/admin/sellers/${sid}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setSellers(sellers.filter((s) => s !== sid));
       showMessage("success", "Seller removed successfully!");
     } catch (error) {
@@ -609,238 +628,233 @@ const AdminPage = () => {
               </form>
             </div>
 
-            {/* Products List */}
+            {/* Products Table */}
             <div className="bg-white/30 backdrop-blur-lg rounded-3xl p-6 shadow-lg">
               <h2 className="text-xl font-semibold text-[#291C08] mb-4">
                 Products ({products.length})
               </h2>
-              <div className="space-y-4">
-                {products.map((prod) => (
-                  <div key={prod._id} className="bg-white/40 rounded-xl p-4">
-                    {editingProdId === prod._id ? (
-                      // Inline Edit Mode
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <input
-                            className="px-3 py-2 rounded-lg border"
-                            value={editingProduct.prodName}
-                            onChange={(e) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                prodName: e.target.value,
-                              })
-                            }
-                            placeholder="Product Name"
-                          />
-                          <input
-                            className="px-3 py-2 rounded-lg border"
-                            value={editingProduct.prodImg}
-                            onChange={(e) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                prodImg: e.target.value,
-                              })
-                            }
-                            placeholder="Image URL"
-                          />
-                          <textarea
-                            className="px-3 py-2 rounded-lg border"
-                            value={editingProduct.prodDesc}
-                            onChange={(e) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                prodDesc: e.target.value,
-                              })
-                            }
-                            placeholder="Description"
-                            rows="2"
-                          />
-                          <select
-                            className="px-3 py-2 rounded-lg border"
-                            value={editingProduct.category}
-                            onChange={(e) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                category: e.target.value,
-                              })
-                            }
-                          >
-                            <option value="Millet">Millet</option>
-                            <option value="Beverage">Beverage</option>
-                            <option value="Snacks">Snacks</option>
-                            <option value="Dessert">Dessert</option>
-                            <option value="Fast Food">Fast Food</option>
-                          </select>
-                          <input
-                            className="px-3 py-2 rounded-lg border"
-                            type="number"
-                            value={editingProduct.price}
-                            onChange={(e) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                price: e.target.value,
-                              })
-                            }
-                            placeholder="Price"
-                          />
-                          <input
-                            className="px-3 py-2 rounded-lg border"
-                            type="number"
-                            value={editingProduct.stock}
-                            onChange={(e) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                stock: e.target.value,
-                              })
-                            }
-                            placeholder="Stock"
-                          />
-                          <textarea
-                            className="px-3 py-2 rounded-lg border"
-                            value={editingProduct.prodIngredients}
-                            onChange={(e) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                prodIngredients: e.target.value,
-                              })
-                            }
-                            placeholder="Ingredients"
-                            rows="2"
-                          />
-                          <textarea
-                            className="px-3 py-2 rounded-lg border md:col-span-2"
-                            value={editingProduct.prodNutrients}
-                            onChange={(e) =>
-                              setEditingProduct({
-                                ...editingProduct,
-                                prodNutrients: e.target.value,
-                              })
-                            }
-                            placeholder="Nutritional Information"
-                            rows="2"
-                          />
-                        </div>
-                        <div className="flex gap-2 justify-end">
-                          <button
-                            onClick={handleEditSave}
-                            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center gap-1"
-                          >
-                            <FaCheck /> Save
-                          </button>
-                          <button
-                            onClick={handleEditCancel}
-                            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-1"
-                          >
-                            <FaTimes /> Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      // Display Mode
-                      <div className="flex items-start gap-4">
-                        <div className="w-20 h-20 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
-                          {prod.prodImg ? (
-                            <img
-                              src={prod.prodImg}
-                              alt={prod.prodName}
-                              className="w-full h-full object-cover"
-                            />
+              
+              {products.length === 0 && !loading ? (
+                <div className="text-center py-8 text-[#291C08]/70">
+                  <FaImage className="mx-auto text-4xl mb-4 opacity-50" />
+                  <p>No products found. Add your first product above!</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full bg-white/40 rounded-xl overflow-hidden">
+                    <thead className="bg-[#291C08] text-white">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-sm font-semibold">Image</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold">Product ID</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold">Name</th>
+                        <th className="px-6 py-3 text-left text-sm font-semibold">Category</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold">Price</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold">Stock</th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold">Rating</th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {products.map((prod, index) => (
+                        <tr key={prod._id} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white/20' : 'bg-white/10'} hover:bg-white/30 transition-colors`}>
+                          {editingProdId === prod._id ? (
+                            // Inline Edit Row
+                            <>
+                              <td className="px-4 py-3">
+                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                                  {editingProduct.prodImg ? (
+                                    <img
+                                      src={editingProduct.prodImg}
+                                      alt="Preview"
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <FaImage className="text-gray-400" />
+                                  )}
+                                </div>
+                                <input
+                                  className="mt-1 w-full px-2 py-1 text-xs rounded border"
+                                  value={editingProduct.prodImg}
+                                  onChange={(e) =>
+                                    setEditingProduct({
+                                      ...editingProduct,
+                                      prodImg: e.target.value,
+                                    })
+                                  }
+                                  placeholder="Image URL"
+                                />
+                              </td>
+                              <td className="px-4 py-3 text-sm font-medium text-[#291C08]">
+                                {editingProduct.prodId}
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  className="w-full px-2 py-1 text-sm rounded border"
+                                  value={editingProduct.prodName}
+                                  onChange={(e) =>
+                                    setEditingProduct({
+                                      ...editingProduct,
+                                      prodName: e.target.value,
+                                    })
+                                  }
+                                />
+                                <textarea
+                                  className="mt-1 w-full px-2 py-1 text-xs rounded border"
+                                  value={editingProduct.prodDesc}
+                                  onChange={(e) =>
+                                    setEditingProduct({
+                                      ...editingProduct,
+                                      prodDesc: e.target.value,
+                                    })
+                                  }
+                                  rows="2"
+                                  placeholder="Description"
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <select
+                                  className="w-full px-2 py-1 text-sm rounded border"
+                                  value={editingProduct.category}
+                                  onChange={(e) =>
+                                    setEditingProduct({
+                                      ...editingProduct,
+                                      category: e.target.value,
+                                    })
+                                  }
+                                >
+                                  <option value="Millet">Millet</option>
+                                  <option value="Beverage">Beverage</option>
+                                  <option value="Snacks">Snacks</option>
+                                  <option value="Dessert">Dessert</option>
+                                  <option value="Fast Food">Fast Food</option>
+                                </select>
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  className="w-full px-2 py-1 text-sm rounded border"
+                                  type="number"
+                                  value={editingProduct.price}
+                                  onChange={(e) =>
+                                    setEditingProduct({
+                                      ...editingProduct,
+                                      price: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  className="w-full px-2 py-1 text-sm rounded border"
+                                  type="number"
+                                  value={editingProduct.stock}
+                                  onChange={(e) =>
+                                    setEditingProduct({
+                                      ...editingProduct,
+                                      stock: e.target.value,
+                                    })
+                                  }
+                                />
+                              </td>
+                              <td className="px-4 py-3 text-sm text-[#291C08]">
+                                {parseFloat(editingProduct.rating || 0).toFixed(1)}⭐
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex gap-1 justify-center">
+                                  <button
+                                    onClick={handleEditSave}
+                                    className="bg-green-500 text-white p-1 rounded hover:bg-green-600 transition-colors"
+                                    title="Save"
+                                  >
+                                    <FaCheck className="text-xs" />
+                                  </button>
+                                  <button
+                                    onClick={handleEditCancel}
+                                    className="bg-gray-500 text-white p-1 rounded hover:bg-gray-600 transition-colors"
+                                    title="Cancel"
+                                  >
+                                    <FaTimes className="text-xs" />
+                                  </button>
+                                </div>
+                              </td>
+                            </>
                           ) : (
-                            <FaImage className="text-gray-400" />
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-semibold text-[#291C08] text-lg">
-                                {prod.prodName}
-                              </h3>
-                              <p className="text-sm text-[#291C08]/70 mb-1">
-                                ID: {prod.prodId}
-                              </p>
-                              <p className="text-sm text-[#291C08]/80 mb-2">
-                                {prod.prodDesc}
-                              </p>
-
-                              <div className="flex flex-wrap items-center gap-x-20 gap-y-2 text-sm text-[#291C08] mt-2">
-                                <span className="flex items-center">
-                                  <strong className="font-semibold mr-1.5">
-                                    Price:
-                                  </strong>{" "}
-                                  ₹{prod.price?.$numberDecimal || prod.price}
-                                </span>
-                                <span className="flex items-center">
-                                  <strong className="font-semibold mr-1.5">
-                                    Stock:
-                                  </strong>
-                                  {prod.stock}
-                                </span>
-                                <span className="flex items-center">
-                                  <strong className="font-semibold mr-1.5">
-                                    Rating:
-                                  </strong>
-                                  {parseFloat(
-                                    prod.rating?.$numberDecimal || prod.rating
-                                  ).toFixed(1)}
-                                  ⭐
-                                </span>
-                                <span className="flex items-center">
-                                  <strong className="font-semibold mr-1.5">
-                                    Category:
-                                  </strong>
+                            // Display Row
+                            <>
+                              <td className="px-4 py-3">
+                                <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                                  {prod.prodImg ? (
+                                    <img
+                                      src={prod.prodImg}
+                                      alt={prod.prodName}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <FaImage className="text-gray-400" />
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-sm font-medium text-[#291C08]">
+                                {prod.prodId}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="text-sm font-semibold text-[#291C08]">
+                                  {prod.prodName}
+                                </div>
+                                <div className="text-xs text-[#291C08]/70 mt-1 line-clamp-2">
+                                  {prod.prodDesc}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-[#291C08]">
+                                <span className="bg-[#291C08]/20 px-2 py-1 rounded-full text-xs">
                                   {prod.category}
                                 </span>
-                              </div>
-
-                              {prod.prodIngredients &&
-                                prod.prodIngredients !== "Not Available" && (
-                                  <p className="text-xs text-[#291C08]/60 mt-2">
-                                    <strong>Ingredients:</strong>{" "}
-                                    {prod.prodIngredients}
-                                  </p>
-                                )}
-                              {prod.prodNutrients &&
-                                prod.prodNutrients !== "Not Available" && (
-                                  <p className="text-xs text-[#291C08]/60 mt-1">
-                                    <strong>Nutrients:</strong>{" "}
-                                    {prod.prodNutrients}
-                                  </p>
-                                )}
-                            </div>
-                            <div className="flex gap-2 flex-shrink-0 ml-4">
-                              <button
-                                onClick={() => handleEditStart(prod)}
-                                className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-colors"
-                              >
-                                <FaEdit />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleDeleteProd(prod.prodId, prod._id)
-                                }
-                                className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-colors"
-                              >
-                                <FaTrash />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {products.length === 0 && !loading && (
-                  <div className="text-center py-8 text-[#291C08]/70">
-                    <FaImage className="mx-auto text-4xl mb-4 opacity-50" />
-                    <p>No products found. Add your first product above!</p>
-                  </div>
-                )}
-              </div>
+                              </td>
+                              <td className="px-4 py-3 text-sm font-semibold text-[#291C08]">
+                                ₹{prod.price?.$numberDecimal || prod.price}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-[#291C08]">
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  prod.stock > 15 ? 'bg-green-100 text-green-700' : 
+                                  prod.stock > 10 ? 'bg-yellow-100 text-yellow-700' : 
+                                  prod.stock > 0 ? 'bg-red-100 text-red-700' : 
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {prod.stock}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-sm text-[#291C08]">
+                                {parseFloat(prod.rating?.$numberDecimal || prod.rating).toFixed(1)}⭐
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex gap-1 justify-center">
+                                  <button
+                                    onClick={() => handleEditStart(prod)}
+                                    className="bg-blue-500 text-white p-1 rounded hover:bg-blue-600 transition-colors"
+                                    title="Edit"
+                                  >
+                                    <FaEdit className="text-xs" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteProd(prod.prodId, prod._id)}
+                                    className="bg-red-500 text-white p-1 rounded hover:bg-red-600 transition-colors"
+                                    title="Delete"
+                                  >
+                                    <FaTrash className="text-xs" />
+                                  </button>
+                                </div>
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Sellers and Notifications Tabs remain the same */}
         {activeTab === "sellers" && (
           <div className="space-y-6">
             {/* Add Seller */}

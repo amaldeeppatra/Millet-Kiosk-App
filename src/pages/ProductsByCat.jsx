@@ -4,6 +4,7 @@ import axios from 'axios';
 import { FaChevronLeft, FaSearch, FaBoxOpen } from 'react-icons/fa';
 import Skeleton from '@mui/material/Skeleton';
 import CartPane from '../components/homepage/CartPane';
+import { CgProfile } from 'react-icons/cg';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -42,6 +43,11 @@ const ProductsByCat = () => {
         { name: 'Fast Food', icon: '/src/resources/categories/fast food.jpg', apiPath: 'Fast Food' }
     ];
 
+    const user = {
+        name: 'Jane Doe',
+        profilePicture: '/api/placeholder/40/40'
+    };
+
     const [selectedCategory, setSelectedCategory] = useState('Millet');
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
@@ -62,7 +68,8 @@ const ProductsByCat = () => {
 
     // Fetch products when category changes
     useEffect(() => {
-        let isMounted = true;
+        const controller = new AbortController(); 
+        
         const fetchProducts = async () => {
             setLoading(true);
             const currentCategory = categories.find(cat => cat.name === selectedCategory);
@@ -71,22 +78,31 @@ const ProductsByCat = () => {
 
             if (currentCategory && API_URL) {
                 try {
-                    const response = await axios.get(`${API_URL}/products/cat/${currentCategory.apiPath}`, { timeout: 5000 });
-                    if (Array.isArray(response.data) && response.data.length > 0) {
-                        productsToSet = response.data.map(p => ({ ...p, prodImg: p.prodImg || 'https://via.placeholder.com/150' }));
+                    const fullUrl = `${API_URL}/products/cat/${currentCategory.apiPath}`;
+                    const response = await axios.get(fullUrl, { timeout: 5000 });
+                    if (Array.isArray(response.data)) {
+                        productsToSet = response.data.map(product => ({
+                            ...product,
+                            prodName: product.prodName || 'Unnamed Product',
+                            price: product.price || 0,
+                            prodImg: product.prodImg || '/api/placeholder/120/120'
+                        }));
                     }
                 } catch (apiError) {
-                    console.warn(`API fetch failed for ${currentCategory.apiPath}, using fallback.`, apiError);
+                    console.warn('API fetch failed, using predefined products', apiError);
                 }
             }
-
+            
             if (isMounted) {
                 setProducts(productsToSet);
                 setLoading(false);
             }
         };
         fetchProducts();
-        return () => { isMounted = false; };
+        
+        return () => { 
+            controller.abort(); 
+        };
     }, [selectedCategory]);
 
     const getProductId = (product) => product._id || product.prodId;
@@ -102,106 +118,135 @@ const ProductsByCat = () => {
         });
     };
 
-    const handleIncrease = (product) => handleAddToCart(product); // Logic is the same
+    const handleIncrease = (product) => {
+        const productId = getProductId(product);
+        setCartItems((prevItems = []) =>
+            prevItems.map(item =>
+                getProductId(item) === productId ? { ...item, quantity: item.quantity + 1 } : item
+            )
+        );
+    };
     
     const handleDecrease = (product) => {
         const productId = getProductId(product);
-        setCartItems(prev => prev.map(item =>
-            getProductId(item) === productId ? { ...item, quantity: item.quantity - 1 } : item
-        ).filter(item => item.quantity > 0));
+        setCartItems((prevItems = []) =>
+            prevItems
+                .map(item =>
+                    getProductId(item) === productId ? { ...item, quantity: item.quantity - 1 } : item
+                )
+                .filter(item => item.quantity > 0)
+        );
     };
 
     const handleRemove = (product) => {
         const productId = getProductId(product);
-        setCartItems(prev => prev.filter(item => getProductId(item) !== productId));
+        setCartItems((prevItems = []) =>
+            prevItems.filter(item => getProductId(item) !== productId)
+        );
     };
 
     const filteredProducts = Array.isArray(products)
         ? products.filter(p => p && p.prodName && p.prodName.toLowerCase().includes(searchTerm.toLowerCase()))
         : [];
 
+    const recentSearches = [`${selectedCategory} Smoothie`, `${selectedCategory} Special`, `Popular Items`];
+    const popularSearches = [`Best of ${selectedCategory}`, `Top Choices`, `Favorites`];
+
+    const handleSearch = (term) => {
+        setSearchTerm(term);
+        setSearchOpen(false);
+    };
+
     return (
-        <div className="flex flex-col h-screen bg-[#F8EDD6]">
-            {/* Header */}
-            <header className="px-4 py-4 flex items-center gap-3 z-20 bg-[#F8EDD6]/80 backdrop-blur-sm sticky top-0">
-                <button onClick={() => navigate(-1)} className="p-3 bg-[#291C08] rounded-full text-white shadow-md">
-                    <FaChevronLeft />
-                </button>
-                <div className="relative flex-1">
-                    <FaSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-[#291C08]/60" />
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search for items..."
-                        className="w-full pl-10 pr-4 py-2 bg-white/50 backdrop-blur-md border border-white/40 text-[#291C08] placeholder-[#291C08]/60 rounded-full focus:outline-none focus:ring-2 focus:ring-[#291C08]"
-                    />
+        <div className="flex flex-col h-screen bg-[url('/resources/homepage/Homepage.png')] bg-repeat">
+            <div className="absolute inset-0 bg-amber-50 bg-opacity-90"></div>
+            <div className="flex flex-col h-screen z-10 relative">
+                <div className="flex items-center px-4 py-2 gap-3">
+                    <button onClick={() => navigate(-1)} className="text-amber-800 text-2xl font-bold">
+                        &lt;
+                    </button>
+                    {/* MODIFICATION: Changed bg and shadow for a deeper, softer look */}
+                    <div className="flex-1 bg-slate-100 rounded-full px-4 py-2 flex items-center gap-2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]">
+                        <span className="text-gray-500">🔍</span>
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Search items..."
+                            className="bg-transparent outline-none flex-1 text-gray-800"
+                            onFocus={() => setSearchOpen(true)}
+                        />
+                    </div>
+                    <button className="w-9 h-9 rounded-full overflow-hidden">
+                        <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
+                    </button>
                 </div>
-            </header>
-            
-            <div className="flex flex-1 overflow-hidden">
-                {/* Vertical Category Navigation (Aside) */}
-                <aside className="w-24 flex-shrink-0 overflow-y-auto bg-transparent pt-2">
-                    {categories.map((category) => (
-                        <button
-                            key={category.name}
-                            className={`w-full p-2 flex flex-col items-center justify-center h-24 cursor-pointer transition-all duration-300 border-r-4 ${selectedCategory === category.name ? 'border-[#291C08] bg-white/30' : 'border-transparent hover:bg-white/20'}`}
-                            onClick={() => setSelectedCategory(category.name)}
-                        >
-                            <div className="h-12 w-12 rounded-lg mb-1 flex items-center justify-center overflow-hidden shadow-sm">
-                                <img src={category.icon} alt={category.name} className="w-full h-full object-cover" />
-                            </div>
-                            <span className={`text-xs font-semibold text-center transition-colors ${selectedCategory === category.name ? 'text-[#291C08]' : 'text-[#291C08]/70'}`}>
-                                {category.name}
-                            </span>
-                        </button>
-                    ))}
-                </aside>
                 
-                {/* Main Product Display Area */}
-                <main className="flex-1 overflow-y-auto p-4">
-                    {loading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {[...Array(6)].map((_, i) => <ProductCardSkeleton key={i} />)}
-                        </div>
-                    ) : filteredProducts.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center text-center h-full">
-                            <div className="w-20 h-20 mx-auto bg-[#291C08]/10 rounded-full flex items-center justify-center mb-4">
-                                <FaBoxOpen className="text-[#291C08]/50 text-4xl" />
+                <div className="px-4 py-2 text-sm text-gray-700">
+                    {loading ? 'Finding items...' : `${filteredProducts.length} items found:`}
+                </div>
+                
+                <div className="flex flex-1 overflow-hidden">
+                    <div className="w-24 border-r border-amber-200 flex flex-col overflow-y-auto bg-amber-50 bg-opacity-50">
+                        {categories.map((category) => (
+                            <div key={category.name} className={`p-2 flex flex-col items-center justify-center h-20 cursor-pointer transition-colors duration-200 ${selectedCategory === category.name ? 'bg-amber-100' : 'hover:bg-amber-50'}`} onClick={() => setSelectedCategory(category.name)}>
+                                <div className="h-10 w-10 rounded-md mb-1 flex items-center justify-center overflow-hidden">
+                                    <img src={category.icon} alt={category.name} className="w-full h-full object-cover"/>
+                                </div>
+                                <span className="text-xs font-medium text-center">{category.name}</span>
                             </div>
-                            <h3 className="text-xl font-semibold text-[#291C08]">No Products Found</h3>
-                            <p className="text-[#291C08]/70 mt-2">Try changing the category or search term.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredProducts.map((item) => {
-                                const cartItem = cartItems.find(ci => getProductId(ci) === getProductId(item));
-                                return (
-                                    <div key={getProductId(item)} className="bg-white/30 backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden flex flex-col transition-transform hover:scale-105 duration-300">
-                                        <img src={item.prodImg} alt={item.prodName} className="w-full h-40 object-cover" />
-                                        <div className="p-4 flex flex-col flex-grow">
-                                            <h3 className="text-base font-bold text-[#291C08]">{item.prodName}</h3>
-                                            <div className="flex justify-between items-center mt-auto pt-4">
-                                                <span className="text-lg font-semibold text-[#291C08]">₹{item.price}</span>
-                                                {cartItem ? (
-                                                    <div className="flex items-center gap-2 bg-[#291C08] text-white rounded-full shadow-lg">
-                                                        <button onClick={() => handleDecrease(item)} className="px-3 py-1 text-lg font-bold">-</button>
-                                                        <span className="font-semibold">{cartItem.quantity}</span>
-                                                        <button onClick={() => handleIncrease(item)} className="px-3 py-1 text-lg font-bold">+</button>
-                                                    </div>
-                                                ) : (
-                                                    <button className="bg-[#291C08] text-white text-sm font-bold px-5 py-2 rounded-full shadow-lg hover:bg-opacity-90 transition-all" onClick={() => handleAddToCart(item)}>
-                                                        ADD
-                                                    </button>
-                                                )}
-                                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="flex-1 bg-[url('./resources/homepage/Homepage.png')] bg-repeat bg-center overflow-y-auto">
+                        {loading ? (
+                            <div className="flex items-center justify-center h-full"><p>Loading...</p></div>
+                        ) : error ? (
+                            <div className="flex items-center justify-center h-full text-red-500 p-4 text-center"><p>{error}</p></div>
+                        ) : filteredProducts.length === 0 ? (
+                            <div className="flex items-center justify-center h-full"><p>No products found.</p></div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-4 p-4">
+                                {filteredProducts.map((item) => (
+                                    <div key={item.prodId} className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center">
+                                        <img src={item.prodImg} alt={item.prodName} className="h-24 w-24 rounded-md mb-2 object-cover"/>
+                                        <div className="text-sm font-medium text-center mb-2">{item.prodName}</div>
+                                        <div className="flex items-center justify-between w-full mt-auto">
+                                            <span className="text-sm font-bold">₹{item.price}</span>
+                                            <button className="bg-amber-800 text-white text-xs px-4 py-1 rounded-md" onClick={() => handleAddToCart(item)}>Add</button>
                                         </div>
                                     </div>
-                                );
-                            })}
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <CartPane cartItems={cartItems} onIncrease={handleIncrease} onDecrease={handleDecrease} onRemove={handleRemove}/>
+
+                {searchOpen && (
+                    <div className="fixed inset-0 z-[999] flex flex-col bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center" style={{ backgroundColor: '#F8EDD6' }}>
+                        <div className="flex items-center p-4">
+                            <button onClick={() => setSearchOpen(false)} className="text-xl font-semibold mr-2">&lt;</button>
+                            <input type="text" placeholder={`Search ${selectedCategory}...`} autoFocus value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-3/4 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"/>
+                            <button onClick={() => setSearchOpen(false)} className="ml-2 bg-[#291C08] text-white px-4 py-2 rounded-full">Done</button>
                         </div>
-                    )}
-                </main>
+                        <div className="p-4 overflow-auto">
+                            <h2 className="text-lg font-semibold mb-2">Recent Searches</h2>
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {recentSearches.map((item, idx) => (
+                                    <span key={idx} className="px-3 py-1 rounded-full bg-[#291C08] text-white text-sm cursor-pointer" onClick={() => handleSearch(item)}>{item}</span>
+                                ))}
+                            </div>
+                            <h2 className="text-lg font-semibold mb-2">Popular Searches</h2>
+                            <div className="flex flex-wrap gap-2">
+                                {popularSearches.map((item, idx) => (
+                                    <span key={idx} className="px-3 py-1 rounded-full bg-[#291C08] text-white text-sm cursor-pointer" onClick={() => handleSearch(item)}>{item}</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <CartPane cartItems={cartItems} onIncrease={handleIncrease} onDecrease={handleDecrease} onRemove={handleRemove} />
