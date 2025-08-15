@@ -11,11 +11,12 @@ import ProductsByCat from '../components/homepage/ProductsByCat';
 import Footer from '../components/footer/Footer';
 import CartPane from '../components/homepage/CartPane';
 import MissionShaktiCard from '../components/homepage/MissionShaktiCard';
+import { AiOutlineClose } from 'react-icons/ai';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Extract token from query parameters and store it in cookies
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -47,7 +48,7 @@ const HomePage = () => {
       setCartItems(JSON.parse(storedCart));
     }
   }, []);
-  
+
   // Update localStorage whenever cartItems changes
   useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
@@ -117,14 +118,14 @@ const HomePage = () => {
 
   // Utility functions for cart operations
   const getProductId = (product) => product._id || product.prodId;
-  
+
   const handleAddToCart = (product) => {
-    const productId = product.prodId; 
+    const productId = product.prodId;
     setCartItems((prevItems) => {
       const existing = prevItems.find(item => item.prodId === productId);
       if (existing) {
         return prevItems.map(item =>
-          item.prodId === productId 
+          item.prodId === productId
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -140,31 +141,31 @@ const HomePage = () => {
       }
     });
   };
-  
+
   const handleIncrease = (product) => {
     const productId = getProductId(product);
     setCartItems((prevItems) =>
       prevItems.map(item =>
-        getProductId(item) === productId 
-          ? { ...item, quantity: item.quantity + 1 } 
+        getProductId(item) === productId
+          ? { ...item, quantity: item.quantity + 1 }
           : item
       )
     );
   };
-  
+
   const handleDecrease = (product) => {
     const productId = getProductId(product);
     setCartItems((prevItems) =>
       prevItems
         .map(item =>
-          getProductId(item) === productId 
-            ? { ...item, quantity: item.quantity - 1 } 
+          getProductId(item) === productId
+            ? { ...item, quantity: item.quantity - 1 }
             : item
         )
         .filter(item => item.quantity > 0)
     );
   };
-  
+
   const handleRemove = (product) => {
     const productId = getProductId(product);
     setCartItems((prevItems) =>
@@ -176,8 +177,8 @@ const HomePage = () => {
   const renderProfilePicture = () => {
     if (userInfo?.user?.avatar) {
       return (
-        <img 
-          src={userInfo.user.avatar} 
+        <img
+          src={userInfo.user.avatar}
           alt="Profile"
           className="size-8 rounded-full object-cover"
         />
@@ -188,7 +189,7 @@ const HomePage = () => {
         .map(name => name[0])
         .join('')
         .toUpperCase();
-      
+
       return (
         <div className="size-8 rounded-full object-cover">
           {initials}
@@ -196,7 +197,7 @@ const HomePage = () => {
       );
     } else {
       return (
-        <div className="bg-[#291C08] p-2 rounded-full shadow-md">
+        <div className="bg-tertiary p-2 rounded-full shadow-md">
           <CgProfile className="text-4xl text-white" />
         </div>
       );
@@ -221,35 +222,49 @@ const HomePage = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-no-repeat bg-cover bg-center bg-[url('./resources/homepage/Homepage.png')]">
+    <div className="relative min-h-screen bg-background">
       {/* Navbar */}
       <header className="bg-opacity-90 p-4 relative z-50">
         <nav className="flex items-center justify-between relative">
           <div className="relative">
-            <button 
-              onClick={() => setMenuOpen(!menuOpen)} 
-              className="flex flex-col space-y-1 focus:outline-none bg-[#291C08] p-2 rounded-md z-50 relative"
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center justify-center focus:outline-none bg-tertiary p-2 rounded-md z-50 relative"
             >
-              <span className="block w-4 h-0.5 bg-white"></span>
-              <span className="block w-4 h-0.5 bg-white"></span>
-              <span className="block w-4 h-0.5 bg-white"></span>
+              {menuOpen ? (
+                <AiOutlineClose className="text-white h-3.5" />
+              ) : (
+                <div className="flex flex-col space-y-1">
+                  <span className="block w-4 h-0.5 bg-white"></span>
+                  <span className="block w-4 h-0.5 bg-white"></span>
+                  <span className="block w-4 h-0.5 bg-white"></span>
+                </div>
+              )}
             </button>
+
             {menuOpen && (
               <div className="absolute top-12 left-0 w-48 bg-white/30 backdrop-blur-lg border border-white/40 rounded-lg shadow-lg z-50">
                 <ul className="text-black text-sm">
-                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-t-lg transition-all" onClick={() => navigate("/profile")}>
+                  <li
+                    className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-t-lg transition-all"
+                    onClick={() => navigate("/profile")}
+                  >
                     My Profile
                   </li>
                   <li className="px-4 py-2 hover:bg-white/50 cursor-pointer transition-all">
                     Previous Orders
                   </li>
-                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-b-lg transition-all" onClick={handleLogout}>
+                  <li
+                    className="px-4 py-2 hover:bg-white/50 cursor-pointer rounded-b-lg transition-all"
+                    onClick={handleLogout}
+                  >
                     Logout
                   </li>
                 </ul>
               </div>
             )}
           </div>
+
           <div className="flex-1 mx-4">
             <input
               type="text"
@@ -258,20 +273,19 @@ const HomePage = () => {
               className="w-full px-3 py-1 bg-white/30 backdrop-blur-md border border-white/40 text-black placeholder-black rounded-[70px] focus:outline-none focus:ring-2 focus:ring-[#291C08]"
             />
           </div>
-          <div className="z-50">
-            {renderProfilePicture()}
-          </div>
+
+          <div className="z-50">{renderProfilePicture()}</div>
         </nav>
       </header>
 
       {/* Search Overlay */}
       {searchOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-[999] flex flex-col bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center"
           style={{ backgroundColor: '#F8EDD6' }}
         >
           <div className="flex items-center p-4">
-            <button 
+            <button
               onClick={() => setSearchOpen(false)}
               className="text-xl font-semibold mr-2"
             >
@@ -286,9 +300,9 @@ const HomePage = () => {
               onKeyDown={handleKeyDown}
               className="w-3/4 px-3 py-2 border border-gray-300 rounded-full focus:outline-none"
             />
-            <button 
+            <button
               onClick={handleSearch}
-              className="ml-2 bg-[#291C08] text-white px-4 py-2 rounded-full"
+              className="ml-2 bg-tertiary text-white px-4 py-2 rounded-full"
             >
               Search
             </button>
@@ -297,9 +311,9 @@ const HomePage = () => {
             <h2 className="text-lg font-semibold mb-2">Recent Searches</h2>
             <div className="flex flex-wrap gap-2 mb-4">
               {recentSearches.map((item, idx) => (
-                <span 
-                  key={idx} 
-                  className="px-3 py-1 rounded-full bg-[#291C08] text-white text-sm cursor-pointer"
+                <span
+                  key={idx}
+                  className="px-3 py-1 rounded-full bg-tertiary text-white text-sm cursor-pointer"
                   onClick={() => {
                     setSearchTerm(item);
                     navigate(`/search?query=${encodeURIComponent(item)}`);
@@ -313,9 +327,9 @@ const HomePage = () => {
             <h2 className="text-lg font-semibold mb-2">Popular Searches</h2>
             <div className="flex flex-wrap gap-2">
               {popularSearches.map((item, idx) => (
-                <span 
-                  key={idx} 
-                  className="px-3 py-1 rounded-full bg-[#291C08] text-white text-sm cursor-pointer"
+                <span
+                  key={idx}
+                  className="px-3 py-1 rounded-full bg-tertiary text-white text-sm cursor-pointer"
                   onClick={() => {
                     setSearchTerm(item);
                     navigate(`/search?query=${encodeURIComponent(item)}`);
@@ -335,10 +349,9 @@ const HomePage = () => {
         {slides.map((slide, index) => (
           <div
             key={index}
-            className={`absolute top-0 left-0 w-full h-full bg-cover bg-center transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{ backgroundImage: `url(${slide.image})` }}
+            className={`absolute top-0 left-0 w-full h-full bg-cover bg-center transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
+            style={{ backgroundImage: `url(${slide.image})`, borderRadius: '0 0 50px 50px' }}
             aria-label={slide.alt}
           />
         ))}
@@ -348,9 +361,8 @@ const HomePage = () => {
             <span
               key={dotIndex}
               onClick={() => setCurrentSlide(dotIndex)}
-              className={`block w-3 h-3 rounded-full cursor-pointer ${
-                dotIndex === currentSlide ? 'bg-white' : 'bg-gray-400'
-              }`}
+              className={`block w-3 h-3 rounded-full cursor-pointer ${dotIndex === currentSlide ? 'bg-white' : 'bg-gray-400'
+                }`}
             />
           ))}
         </div>
@@ -368,17 +380,17 @@ const HomePage = () => {
       <div className="mt-10 px-4">
         <div className="flex space-x-4 overflow-x-auto pb-4 snap-x snap-mandatory">
           {[{ id: 1, title: "Order Now!!!", image: banner1 },
-            { id: 2, title: "Flat ₹50 Off", image: banner2 }].map((offer) => (
-            <div 
-              key={offer.id} 
-              className="min-w-[220px] snap-start bg-[#291C08] rounded-3xl shadow-md pl-4"
+          { id: 2, title: "Flat ₹50 Off", image: banner2 }].map((offer) => (
+            <div
+              key={offer.id}
+              className="min-w-[220px] snap-start bg-tertiary rounded-3xl shadow-md pl-4"
             >
               <div className="flex items-center justify-between">
                 <h4 className="text-lg font-semibold text-white">{offer.title}</h4>
-                <img 
-                  src={offer.image} 
-                  alt={offer.title} 
-                  className="w-[7rem] h-28" 
+                <img
+                  src={offer.image}
+                  alt={offer.title}
+                  className="w-[7rem] h-28 rounded-3xl"
                 />
               </div>
             </div>
@@ -394,15 +406,15 @@ const HomePage = () => {
       <ProductsByCat title="Fast Food" cat="Fast Food" onAddToCart={handleAddToCart} />
 
       {/* Render the cart pane fixed at the bottom */}
-      <CartPane 
-        cartItems={cartItems} 
+      <CartPane
+        cartItems={cartItems}
         onIncrease={handleIncrease}
         onDecrease={handleDecrease}
         onRemove={handleRemove}
       />
 
       {/* Millet Shakti Program */}
-      <MissionShaktiCard/>
+      <MissionShaktiCard />
 
       {/* Footer */}
       <Footer />

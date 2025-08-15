@@ -37,38 +37,38 @@ const ProductsByCat = ({ title, cat, onAddToCart }) => {
   return (
     <div className="mt-8 px-7">
       <div className="flex items-center mb-4">
-        <h3 className="text-2xl font-semibold text-[#783A0D] mr-4">{title}</h3>
-        <div className="flex-grow border-b-2 border-[#783A0D]"></div>
-        <button className="ml-4 text-[#783A0D] font-semibold" onClick={() => navigate('/categories')}>See All</button>
+        <h3 className="text-2xl font-semibold text-tertiary mr-4">{title}</h3>
+        <div className="flex-grow border-b-2 border-tertiary"></div>
+        <button className="ml-4 text-tertiary font-semibold" onClick={() => navigate('/categories')}>See All</button>
       </div>
       <div className="flex flex-nowrap space-x-7 overflow-x-auto pb-4 scrollbar-hide">
         {products && products.length > 0 ? (
           products.slice(0, 5).map((product) => (
-            <div 
-              key={product._id || product.prodId} 
-              className="flex-none w-[20%] cursor-pointer"
-              onClick={() => navigate(`/product/${product._id || product.prodId}`)}
-            >
-              <div className="aspect-square rounded-[26px] overflow-hidden relative bg-gray-100">
+            <div className="flex-none w-[20%] pt-4">
+              <div
+                className="aspect-square rounded-[26px] relative bg-gray-100 overflow-visible cursor-pointer"
+                onClick={() => navigate(`/product/${product._id || product.prodId}`)}
+              >
                 <img
                   src={product.prodImg}
                   alt={product.prodName}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-[26px]"
                 />
-                <button 
-                  className="absolute top-1 right-1 bg-white text-[#783A0D] text-3xl rounded-full border-4 border-[#783A0D] w-8 h-8 flex items-center justify-center"
+                <button
+                  className="absolute -top-[5px] -right-[5px] bg-background text-tertiary text-3xl rounded-full border-4 border-tertiary w-7 h-7 flex items-center justify-center pointer-events-auto"
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent triggering navigation
+                    e.stopPropagation(); // stop card click
                     onAddToCart(product);
                   }}
                 >
-                  <AiOutlinePlus />
+                  <AiOutlinePlus className='w-7 h-7'/>
                 </button>
               </div>
-              <p className="mt-2 text-center text-sm font-semibold text-[#783A0D]">
+              <p className="mt-2 text-center text-sm font-semibold text-tertiary">
                 {product.prodName}
               </p>
             </div>
+
           ))
         ) : (
           <div>No products found in this category.</div>
