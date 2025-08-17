@@ -148,43 +148,44 @@ const CartPage = () => {
               </button>
               <h1 className="text-xl font-bold text-[#DE6B18]">Your Cart</h1>
             </div>
-            <button onClick={clearCart} className="bg-[#DE6B18] text-white px-4 py-2 rounded-lg font-semibold text-sm">
+            <button onClick={clearCart} className="bg-[#DE6B18] text-white px-5 py-2 rounded-full font-semibold text-sm shadow-md">
               Clear Cart
             </button>
           </div>
 
-          <div className="bg-[#FAF7E7] rounded-2xl p-4 mb-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
-            <div className="flex justify-between items-center text-[#DE6B18]">
-              <div className='font-bold'>
-                <h2 className="text-xl">Get more,</h2>
-                <p className="text-lg">For less!</p>
+          {/* --- MODIFIED: Added horizontal margin (mx-2) --- */}
+          <div className="bg-[#FFE7D1] rounded-3xl mb-6 shadow-lg overflow-hidden flex flex-col mx-2">
+            <div className="p-5">
+              <div className="flex justify-between items-center text-[#DE6B18]">
+                <div className='font-bold'>
+                  <h2 className="text-xl">Get more,</h2>
+                  <p className="text-lg">For less!</p>
+                </div>
+                <div className="text-4xl font-extrabold text-right">40%<br />off!!!</div>
               </div>
-              <div className="text-4xl font-extrabold text-right">40%<br />off!!!</div>
             </div>
-            <div className="bg-white rounded-lg mt-3 shadow-inner">
-              <button className="text-[#A24D10] w-full py-2 text-sm font-bold">
+            <div className="bg-white">
+              <button className="text-[#A24D10] w-full py-2.5 text-sm font-bold">
                 View more coupons
               </button>
             </div>
           </div>
 
-          {/* Review Order Card */}
-          <div className="bg-[#FAF7E7] rounded-2xl p-4 mb-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+          {/* --- MODIFIED: Added horizontal margin (mx-2) --- */}
+          <div className="bg-[#FFE7D1] rounded-3xl p-5 mb-6 shadow-lg mx-2">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold text-[#DE6B18]">Review Your Order</h2>
-              <span className="text-xs font-bold text-[#291C08] bg-white px-3 py-1 rounded-md shadow-sm">{cartItems.length} Items</span>
+              <span className="text-xs font-bold text-[#8C3F0B] bg-white px-3 py-1 rounded-md shadow-sm">{cartItems.length} Items</span>
             </div>
             {cartItems.length > 0 ? (
               cartItems.map(item => (
                 <div key={getProductId(item)} className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
                     <img src={item.prodImg} alt={item.prodName} className="w-12 h-12 rounded-lg object-cover mr-3" />
-                    {/* --- FINAL CORRECTION: Item name is orange --- */}
                     <span className="font-semibold text-base text-[#DE6B18]">{item.prodName}</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    {/* --- FINAL CORRECTION: Stepper is white with orange text --- */}
-                    <div className="flex items-center space-x-2 bg-white text-[#DE6B18] rounded-full px-2 py-0.5 shadow-sm">
+                    <div className="flex items-center space-x-2 bg-white text-[#123B33] rounded-full px-2 py-0.5 shadow-sm">
                       <button className="text-lg font-bold">-</button>
                       <span className="font-bold text-base w-4 text-center">{item.quantity}</span>
                       <button className="text-lg font-bold">+</button>
@@ -216,33 +217,33 @@ const CartPage = () => {
             </div>
           </div>
 
-          {/* Bill Details Card */}
-          <div className="bg-[#FAF7E7] rounded-2xl p-4 mb-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
-            <h2 className="text-lg font-bold text-[#291C08] mb-4">Bill Details</h2>
+          <h2 className="text-xl font-bold text-[#291C08] mb-4">Bill Details</h2>
+          {/* --- MODIFIED: Added horizontal margin (mx-2) --- */}
+          <div className="bg-[#FFE7D1] rounded-3xl p-5 mb-6 shadow-lg mx-2">
             <div className="space-y-3">
               {cartItems.map(item => (
                 <div key={getProductId(item)} className="flex justify-between text-base">
-                  {/* --- FINAL CORRECTION: Item name is orange --- */}
                   <span className='font-medium text-[#DE6B18]'>{item.prodName}</span>
                   <span className="font-medium text-[#DE6B18]">₹{item.price * item.quantity}</span>
                 </div>
               ))}
             </div>
-            <div className="border-t border-gray-300 my-4"></div>
+            <div className="border-t border-[#DE6B18]/30 my-4"></div>
             <div className="flex justify-between font-bold text-lg">
-              {/* --- FINAL CORRECTION: Grand Total label is orange --- */}
               <span className="text-[#DE6B18]">Grand Total:</span>
               <span className='text-[#DE6B18]'>₹{total}</span>
             </div>
           </div>
 
-          <button
-            onClick={paymentHandler}
-            disabled={cartItems.length === 0}
-            className={`w-full py-3.5 rounded-2xl text-lg font-bold text-white transition-colors shadow-lg ${cartItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#DE6B18] hover:bg-[#C1580D]'}`}
-          >
-            PLACE ORDER
-          </button>
+          <div className="text-center">
+            <button
+              onClick={paymentHandler}
+              disabled={cartItems.length === 0}
+              className={`w-11/12 inline-block py-3.5 rounded-full text-lg font-bold text-white transition-colors shadow-lg ${cartItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#DE6B18] hover:bg-[#C1580D]'}`}
+            >
+              PLACE ORDER
+            </button>
+          </div>
 
           <div className="my-8">
             <h3 className="font-bold text-base text-[#291C08] mb-2">NOTE:</h3>
