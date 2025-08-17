@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import logo from '../resources/logos/shreeannayojana.png';
 import CircularIndeterminate from '../components/atoms/CircularIndeterminate';
+import bg from '../resources/login/loginpage.png';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -13,7 +14,7 @@ const LoginGoogle = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Check if the user is already authenticated by calling the protected endpoint.
+    // --- FIXED: Corrected the typo from API__URL to API_URL. ---
     axios.get(`${API_URL}/auth/login/success`, { withCredentials: true })
       .then(response => {
         console.log('User is already authenticated:', response.data);
@@ -36,7 +37,6 @@ const LoginGoogle = () => {
     }
   };
 
-  // Display a loading spinner while checking for an active session.
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -46,17 +46,23 @@ const LoginGoogle = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col p-4 bg-[#FFFBF8]">
+    <div
+      className="min-h-screen flex flex-col p-4"
+      style={{
+        backgroundImage: `url(${bg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
       <main className="flex-1 flex flex-col items-center justify-center">
-        
-        {/* --- MODIFIED: Lowered the logo slightly using a transform. --- */}
+
         <img
           src={logo}
           alt="Shree Anna Yojana Logo"
           className="w-[25rem] h-[25rem] mb-8 transform translate-y-8"
         />
 
-        {/* --- MODIFIED: Added a softer shadow and a border for an outlined look. --- */}
         <div className="bg-[#FFF9F4] rounded-2xl shadow-md p-8 w-full max-w-sm border border-gray-200">
           <h2 className="text-2xl font-bold text-center text-orange-600 mb-6">
             Sign In to your account
@@ -74,7 +80,6 @@ const LoginGoogle = () => {
             Continue with Google
           </button>
 
-          {/* User-friendly error display. */}
           {error && (
             <p className="text-red-500 text-sm text-center mt-4">{error}</p>
           )}
