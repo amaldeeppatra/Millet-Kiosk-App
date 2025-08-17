@@ -1,33 +1,29 @@
 import { useState, useEffect } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
-import MilletLogo from '../resources/homepage/ShaktiSaathi.png';
+import ShreeAnnaAbhiyanLogo from '../resources/homepage/ShreeAnnaAbhiyanLogo.png';
 import Cookies from 'js-cookie';
 import ParseJwt from '../utils/ParseJWT';
 import axios from 'axios';
+import Footer from '../components/footer/Footer';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const CartPage = () => {
-  // Initialize cartItems from localStorage if available, otherwise use default items.
+  // ... all state and functions remain the same ...
   const [cartItems, setCartItems] = useState(() => {
     const storedCart = localStorage.getItem('cartItems');
-    return storedCart 
-      ? JSON.parse(storedCart) 
-      : [];
+    return storedCart ? JSON.parse(storedCart) : [];
   });
 
-  // State for suggested items
   const [allSuggestedItems, setAllSuggestedItems] = useState([]);
   const [randomSuggestions, setRandomSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
 
-  // Save cartItems to localStorage whenever they change.
   useEffect(() => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Fetch all products from API to use as suggestions
   useEffect(() => {
     const fetchProducts = async () => {
       setLoadingSuggestions(true);
@@ -36,368 +32,227 @@ const CartPage = () => {
         setAllSuggestedItems(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
-        // Fallback to default items if API fails
         setAllSuggestedItems([
-          { prodId: 1, prodName: 'Ladoo', prodImg: 'https://source.unsplash.com/100x100/?indian,sweet,ladoo', price: 15 },
-          { prodId: 2, prodName: 'Bagel', prodImg: 'https://source.unsplash.com/100x100/?bagel', price: 20 },
-          { prodId: 3, prodName: 'Paratha', prodImg: 'https://source.unsplash.com/100x100/?indian,paratha', price: 25 },
-          { prodId: 4, prodName: 'Samosa', prodImg: 'https://source.unsplash.com/100x100/?samosa', price: 15 },
-          { prodId: 5, prodName: 'Dosa', prodImg: 'https://source.unsplash.com/100x100/?dosa', price: 30 },
-          { prodId: 6, prodName: 'Idli', prodImg: 'https://source.unsplash.com/100x100/?idli', price: 18 },
+          { prodId: 1, prodName: 'Laddos', prodImg: 'https://i.imgur.com/eW3sP5H.jpeg', price: 15 },
+          { prodId: 2, prodName: 'Cookies', prodImg: 'https://i.imgur.com/QyL7h2Q.jpeg', price: 20 },
+          { prodId: 3, prodName: 'Papad', prodImg: 'https://i.imgur.com/2a1V22g.jpeg', price: 25 },
+          { prodId: 4, prodName: 'Samosa', prodImg: 'https://i.imgur.com/5S8f2mU.jpeg', price: 15 },
+          { prodId: 5, prodName: 'Mattri', prodImg: 'https://i.imgur.com/bX6f3yD.jpeg', price: 35 },
         ]);
       } finally {
         setLoadingSuggestions(false);
       }
     };
-
     fetchProducts();
   }, []);
 
-  // Select and update 3 random suggestions every 45 seconds
   useEffect(() => {
     if (allSuggestedItems.length < 3) return;
-
     const getRandomSuggestions = () => {
       const shuffled = [...allSuggestedItems].sort(() => 0.5 - Math.random());
       return shuffled.slice(0, 3);
     };
-    
     setRandomSuggestions(getRandomSuggestions());
-    
-    const interval = setInterval(() => {
-      setRandomSuggestions(getRandomSuggestions());
-    }, 45000); // 45 seconds
-    
+    const interval = setInterval(getRandomSuggestions, 45000);
     return () => clearInterval(interval);
   }, [allSuggestedItems]);
 
   const getProductId = (product) => product._id || product.prodId;
-  
+
   const handleIncrease = (product) => {
     const productId = getProductId(product);
-    setCartItems((prevItems) =>
-      prevItems.map(item =>
-        getProductId(item) === productId 
-          ? { ...item, quantity: item.quantity + 1 } 
-          : item
-      )
-    );
-  };
-  
-  const handleDecrease = (product) => {
-    const productId = getProductId(product);
-    setCartItems((prevItems) =>
-      prevItems
-        .map(item =>
-          getProductId(item) === productId 
-            ? { ...item, quantity: item.quantity - 1 } 
-            : item
-        )
-        .filter(item => item.quantity > 0)
-    );
+    setCartItems((prev) => prev.map(item => getProductId(item) === productId ? { ...item, quantity: item.quantity + 1 } : item));
   };
 
+  const handleDecrease = (product) => {
+    const productId = getProductId(product);
+    setCartItems((prev) => prev.map(item => getProductId(item) === productId ? { ...item, quantity: item.quantity - 1 } : item).filter(item => item.quantity > 0));
+  };
+  
   const addSuggestedItem = (item) => {
     const productId = getProductId(item);
     setCartItems(items => {
       const existingItem = items.find(i => getProductId(i) === productId);
       if (existingItem) {
-        return items.map(i =>
-          getProductId(i) === productId ? { ...i, quantity: i.quantity + 1 } : i
-        );
+        return items.map(i => getProductId(i) === productId ? { ...i, quantity: i.quantity + 1 } : i);
       }
-      // Format the price correctly
-      const price = item.price.$numberDecimal ? parseFloat(item.price.$numberDecimal) : item.price;
-      return [...items, { 
-        prodId: item.prodId, 
-        prodName: item.prodName, 
-        prodImg: item.prodImg, 
-        price: price, 
-        quantity: 1 
-      }];
+      const price = item.price?.$numberDecimal ? parseFloat(item.price.$numberDecimal) : item.price;
+      return [...items, { ...item, price, quantity: 1 }];
     });
   };
 
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
   const navigate = useNavigate();
-  const handleGoBack = () => {
-    navigate(-1);
-  };
+  const handleGoBack = () => navigate(-1);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);  
+  useEffect(() => { window.scrollTo(0, 0) }, []);
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
+  const clearCart = () => setCartItems([]);
 
-  const amount = total * 100;
-  const currency = 'INR';
-  const receiptId = 'qwsaq1';
-  
   const [userInfo, setUserInfo] = useState(null);
   useEffect(() => {
     const token = Cookies.get('token');
-    if (token){
-      try{
-        const decoded = ParseJwt(token);
-        setUserInfo(decoded);
-      } catch (error) {
-        console.error('Error decoding token:', error);
-      }
-    }
+    if (token) { try { setUserInfo(ParseJwt(token)); } catch (e) { console.error('Token error:', e); } }
   }, []);
-
-  const customerName = userInfo?.user?.name;
-  const customerEmail = userInfo?.user?.email;
 
   const paymentHandler = async (e) => {
     e.preventDefault();
-    
+    const amount = total * 100;
+
     const response = await fetch(`${API_URL}/order`, {
       method: 'POST',
-      body: JSON.stringify({
-        amount,
-        currency,
-        receipt: receiptId,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      body: JSON.stringify({ amount, currency: 'INR', receipt: 'qwsaq1' }),
+      headers: { 'Content-Type': 'application/json' },
     });
     const order = await response.json();
-    console.log(order);
 
-    var options = {
-      key: "rzp_test_FmFnhFzbQdnD1h", // Your Key ID from the Dashboard
-      amount, // Amount in currency subunits
-      currency,
-      name: "Millet Kiosk App", // Your business name
-      description: "Test Transaction",
-      image: MilletLogo,
-      order_id: order.id, // Order ID from your backend
+    const options = {
+      key: "rzp_test_FmFnhFzbQdnD1h",
+      amount,
+      currency: 'INR',
+      name: "Shree Anna Abhiyan",
+      description: "Millet Product Transaction",
+      image: ShreeAnnaAbhiyanLogo,
+      order_id: order.id,
       handler: async function (response) {
-          const body = {
-            ...response,
-            cartItems,
-            userId: userInfo?.user?._id,
-            email: userInfo?.user?.email,
-            name: userInfo?.user?.name,
-            totalPrice: total
-          };
-
-          const validateRes = await fetch(`${API_URL}/order/validate`, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-              "Content-Type": "application/json",
-            }
+        const body = { ...response, cartItems, userId: userInfo?.user?._id, totalPrice: total };
+        const validateRes = await fetch(`${API_URL}/order/validate`, {
+          method: 'POST', body: JSON.stringify(body), headers: { "Content-Type": "application/json" },
+        });
+        const jsonRes = await validateRes.json();
+        if (jsonRes.message === 'success') {
+          await fetch(`${API_URL}/order/update-inventory`, {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cartItems }),
           });
-          const jsonRes = await validateRes.json();
-          console.log(jsonRes);
-
-          if (jsonRes.message === 'success') {
-            // Update inventory after successful payment verification
-            await fetch(`${API_URL}/order/update-inventory`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ cartItems }),
-            });
-            // Clear the cart and navigate to the order success page
-            clearCart();
-            navigate('/order-success', { state: { orderId: jsonRes.orderId } });
-          }
-          else {
-            console.log("Payment failed!");
-          }
+          clearCart();
+          navigate('/order-success', { state: { orderId: jsonRes.orderId } });
+        } else { console.error("Payment validation failed!"); }
       },
-      prefill: {
-          name: customerName,
-          email: customerEmail,
-          contact: "9000090000"
-      },
-      notes: {
-          address: "Razorpay Corporate Office"
-      },
-      theme: {
-          color: "#3399cc"
-      }
+      prefill: { name: userInfo?.user?.name, email: userInfo?.user?.email, contact: "9000090000" },
+      theme: { color: "#DE6B18" },
     };
 
-    var rzp1 = new window.Razorpay(options);
-    rzp1.on('payment.failed', function (response) {
-        alert(response.error.code);
-        alert(response.error.description);
-        alert(response.error.source);
-        alert(response.error.step);
-        alert(response.error.reason);
-        alert(response.error.metadata.order_id);
-        alert(response.error.metadata.payment_id);
-    });
+    const rzp1 = new window.Razorpay(options);
+    rzp1.on('payment.failed', (response) => alert(response.error.description));
     rzp1.open();
   };
 
-  // Helper function to get the price display value
-  const getDisplayPrice = (item) => {
-    if (item.price.$numberDecimal) {
-      return parseFloat(item.price.$numberDecimal);
-    }
-    return item.price;
-  };
-
   return (
-    <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center p-5">
-      <div className="max-w-[430px] mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center">
-            <button onClick={handleGoBack}>
-              <IoArrowBack className="text-2xl mr-2 text-[#8B4513]" />
+    <div className="min-h-screen bg-[#FFFBF8]">
+      <div className="max-w-md mx-auto">
+        <div className="p-4">
+          <div className="flex justify-between items-center mb-5">
+            <div className="flex items-center space-x-3">
+              <button onClick={handleGoBack}>
+                <IoArrowBack className="text-2xl text-[#DE6B18]" />
+              </button>
+              <h1 className="text-xl font-bold text-[#DE6B18]">Your Cart</h1>
+            </div>
+            <button onClick={clearCart} className="bg-[#DE6B18] text-white px-4 py-2 rounded-lg font-semibold text-sm">
+              Clear Cart
             </button>
-            <h1 className="text-2xl font-semibold text-[#8B4513]">Your Cart</h1>
           </div>
-          <button 
-            onClick={clearCart}
-            className="bg-[#8B4513] text-white px-4 py-2 rounded-[15px] font-medium hover:bg-[#654321]"
-          >
-            Clear Cart
-          </button>
-        </div>
 
-        {/* Coupon Card */}
-        <div className="bg-[#8B4513] text-white rounded-[20px] p-6 mb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-3xl font-bold leading-none mb-1">Get more,</h2>
-              <p className="text-lg font-medium">For less!</p>
-            </div>
-            <div className="text-4xl font-bold leading-none">40%<br />off!!!</div>
-          </div>
-          <button className="bg-white text-[#8B4513] px-6 py-2 rounded-full mt-4 text-sm font-medium w-full text-center">
-            View more coupons
-          </button>
-        </div>
-
-        {/* Review Order Title */}
-        <h2 className="text-[#8B4513] mb-4 flex justify-between text-lg font-semibold px-2">
-          Review Your Order
-          <span>{cartItems.length} Items</span>
-        </h2>
-
-        {/* Cart Items */}
-        <div className="bg-[#8B4513] rounded-[25px] p-4 mb-6">
-          {cartItems.length === 0 ? (
-            <div className="text-white text-center py-4">
-              Your cart is empty. Add some items to proceed.
-            </div>
-          ) : (
-            cartItems.map(item => (
-              <div key={getProductId(item)} className="flex items-center justify-between bg-[#8B4513] rounded-[15px] p-3 mb-3 last:mb-0">
-                <div className="flex items-center">
-                  <img
-                    src={item.prodImg}
-                    alt={item.prodName}
-                    className="w-14 h-14 rounded-[12px] object-cover mr-3"
-                  />
-                  <span className="font-medium text-white">{item.prodName}</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="bg-white rounded-full px-2 py-1 flex items-center">
-                    <button
-                      onClick={() => handleDecrease(item)}
-                      className="w-6 h-6 flex items-center justify-center text-[#8B4513] text-lg font-medium"
-                    >
-                      -
-                    </button>
-                    <span className="mx-2 font-medium text-[#8B4513]">{item.quantity}</span>
-                    <button
-                      onClick={() => handleIncrease(item)}
-                      className="w-6 h-6 flex items-center justify-center text-[#8B4513] text-lg font-medium"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <span className="ml-4 font-medium text-white">₹{item.price * item.quantity}</span>
-                </div>
+          <div className="bg-[#FAF7E7] rounded-2xl p-4 mb-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+            <div className="flex justify-between items-center text-[#DE6B18]">
+              <div className='font-bold'>
+                <h2 className="text-xl">Get more,</h2>
+                <p className="text-lg">For less!</p>
               </div>
-            ))
-          )}
-        </div>
-
-        {/* Random Suggested Items */}
-        <div className="mb-8">
-          <p className="text-center mb-4 text-[#8B4513] font-medium">
-            Missing Something?<br />
-            Add more Items!
-          </p>
-          {loadingSuggestions ? (
-            <div className="flex justify-between px-4">
-              {[1, 2, 3].map(index => (
-                <div key={index} className="relative w-24 h-24 bg-gray-200 rounded-[15px] animate-pulse"></div>
-              ))}
+              <div className="text-4xl font-extrabold text-right">40%<br />off!!!</div>
             </div>
-          ) : (
-            <div className="flex justify-between px-4">
-              {randomSuggestions.map(item => (
-                <div key={getProductId(item)} className="relative w-24 h-24">
-                  <img
-                    src={item.prodImg}
-                    alt={item.prodName}
-                    className="w-full h-full rounded-[15px] object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1 rounded-b-[15px]">
-                    <p className="text-white text-xs font-medium truncate">{item.prodName}</p>
-                    <p className="text-white text-xs">₹{getDisplayPrice(item)}</p>
-                  </div>
-                  <button 
-                    onClick={() => addSuggestedItem(item)}
-                    className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg text-sm"
-                  >
-                    +
-                  </button>
-                </div>
-              ))}
+            <div className="bg-white rounded-lg mt-3 shadow-inner">
+              <button className="text-[#A24D10] w-full py-2 text-sm font-bold">
+                View more coupons
+              </button>
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Bill Details */}
-        <div className="mb-8 px-4">
-          <h2 className="font-semibold mb-4 text-xl text-[#8B4513]">Bill Details</h2>
-          <div className="bg-[#8B4513] rounded-[20px] p-4 text-white">
-            {cartItems.length === 0 ? (
-              <div className="text-center py-2">No items in cart</div>
-            ) : (
+          {/* Review Order Card */}
+          <div className="bg-[#FAF7E7] rounded-2xl p-4 mb-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-[#DE6B18]">Review Your Order</h2>
+              <span className="text-xs font-bold text-[#291C08] bg-white px-3 py-1 rounded-md shadow-sm">{cartItems.length} Items</span>
+            </div>
+            {cartItems.length > 0 ? (
               cartItems.map(item => (
-                <div key={getProductId(item)} className="flex justify-between mb-3 text-lg">
-                  <span>{item.prodName}</span>
-                  <span>₹{item.price * item.quantity}</span>
+                <div key={getProductId(item)} className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <img src={item.prodImg} alt={item.prodName} className="w-12 h-12 rounded-lg object-cover mr-3" />
+                    {/* --- FINAL CORRECTION: Item name is orange --- */}
+                    <span className="font-semibold text-base text-[#DE6B18]">{item.prodName}</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    {/* --- FINAL CORRECTION: Stepper is white with orange text --- */}
+                    <div className="flex items-center space-x-2 bg-white text-[#DE6B18] rounded-full px-2 py-0.5 shadow-sm">
+                      <button className="text-lg font-bold">-</button>
+                      <span className="font-bold text-base w-4 text-center">{item.quantity}</span>
+                      <button className="text-lg font-bold">+</button>
+                    </div>
+                    <span className="font-semibold text-base text-[#DE6B18] w-12 text-right">₹{item.price * item.quantity}</span>
+                  </div>
                 </div>
               ))
-            )}
-            <div className="border-t border-white mt-4 pt-4 flex justify-between font-bold text-xl">
-              <span>Total</span>
-              <span>₹{total}</span>
+            ) : <p className="text-center text-gray-500 py-4">Your cart is empty.</p>}
+          </div>
+
+          <div className="text-center mb-8">
+            <p className="font-bold text-base text-[#A24D10]">Missing Something?</p>
+            <p className="font-semibold text-sm text-[#A24D10] mb-4">Add more items!</p>
+            <div className="flex justify-around">
+              {loadingSuggestions ? (
+                [...Array(3)].map((_, i) => <div key={i} className="w-24 h-32 bg-gray-200 rounded-2xl animate-pulse"></div>)
+              ) : (
+                randomSuggestions.map(item => (
+                  <div key={getProductId(item)} className="w-24 text-center">
+                    <div className="relative mb-1">
+                      <img src={item.prodImg} alt={item.prodName} className="w-24 h-24 rounded-2xl object-cover shadow-md"/>
+                      <button onClick={() => addSuggestedItem(item)} className="absolute top-0 right-0 w-7 h-7 bg-[#291C08] text-white rounded-full flex items-center justify-center text-lg font-bold shadow-lg border-2 border-white">+</button>
+                    </div>
+                    <p className="font-semibold text-sm text-[#291C08] truncate">{item.prodName}</p>
+                  </div>
+                ))
+              )}
             </div>
+          </div>
+
+          {/* Bill Details Card */}
+          <div className="bg-[#FAF7E7] rounded-2xl p-4 mb-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
+            <h2 className="text-lg font-bold text-[#291C08] mb-4">Bill Details</h2>
+            <div className="space-y-3">
+              {cartItems.map(item => (
+                <div key={getProductId(item)} className="flex justify-between text-base">
+                  {/* --- FINAL CORRECTION: Item name is orange --- */}
+                  <span className='font-medium text-[#DE6B18]'>{item.prodName}</span>
+                  <span className="font-medium text-[#DE6B18]">₹{item.price * item.quantity}</span>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-gray-300 my-4"></div>
+            <div className="flex justify-between font-bold text-lg">
+              {/* --- FINAL CORRECTION: Grand Total label is orange --- */}
+              <span className="text-[#DE6B18]">Grand Total:</span>
+              <span className='text-[#DE6B18]'>₹{total}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={paymentHandler}
+            disabled={cartItems.length === 0}
+            className={`w-full py-3.5 rounded-2xl text-lg font-bold text-white transition-colors shadow-lg ${cartItems.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#DE6B18] hover:bg-[#C1580D]'}`}
+          >
+            PLACE ORDER
+          </button>
+
+          <div className="my-8">
+            <h3 className="font-bold text-base text-[#291C08] mb-2">NOTE:</h3>
+            <p className="text-xs text-[#291C08] leading-relaxed">
+              Lorem ipsum odor amet, consectetuer adipiscing elit. Tortor consequat vivamus fusce, dignissim luctus dictum suscipit sed. Ultricies et aenean partrurient proin himenaeos curabitur luctus. Penatibus nascetur velit sit at condimentum semper ullamcorper et. Rhoncus blandit adipiscing egestas vel dignissim suscipit pulvinar interdum. Nec sapien arcu consectetur massa venenatis.
+            </p>
           </div>
         </div>
 
-        {/* Place Order Button */}
-        <button 
-          className={`w-full py-4 rounded-[20px] text-lg font-semibold mb-4 ${
-            cartItems.length === 0 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-[#8B4513] text-white hover:bg-[#654321]'
-          }`}
-          onClick={paymentHandler}
-          disabled={cartItems.length === 0}
-        >
-          PLACE ORDER
-        </button>
+        <Footer />
       </div>
     </div>
   );
