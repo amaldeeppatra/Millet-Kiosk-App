@@ -1,26 +1,47 @@
-import React from 'react'
-import logo from '../resources/logos/ShaktiSaathi.png'
-import bgPattern from '../resources/login/Landing Page Pattern.png'
+import React from "react";
+import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import logo from "../resources/logos/shreeannayojana.png";
 
 const LandingPage = () => {
-  return (
-    <>
-    <div className=''>
-      <div className='bg-[#123B33] h-[62vh] w-screen rounded-b-[px] absolute z-10' 
-        style={{ backgroundColor: "#143826", clipPath: "ellipse(100% 90% at 50% 0%)" }}>
-      </div>
-      <img 
-        src={logo} 
-        alt="" 
-        className='absolute left-1/2 transform -translate-x-[52%] top-[44%] size-64 z-10'
-      />
-      <img src={bgPattern} alt="" className='absolute top-0 z-0 h-[100%]'/>
-      <button className='absolute z-20 top-[85%] left-[22%] text-[1.2rem] bg-[#123B33] border-2 border-[#123B33] font-semibold py-5 px-[4.5rem] rounded-[67px] text-white'>
-        <a href="/login">Continue</a>
-      </button>
-    </div>
-    </>
-  )
-}
+  const navigate = useNavigate(); // 2. Initialize the navigate function
 
-export default LandingPage
+  // 3. Create a function to handle the button click
+  const handleContinue = () => {
+    navigate("/login"); // 4. Tell it where to go
+  };
+
+  return (
+    <main className="relative h-screen w-full bg-[var(--background-color)] overflow-hidden">
+      <div
+        className="absolute top-0 left-0 w-full h-[50vh] bg-[var(--tertiary-color)]"
+        style={{ clipPath: "ellipse(130% 100% at 50% 0%)" }}
+      ></div>
+
+      <div className="relative z-10 h-full w-full flex flex-col items-center">
+        <div className="h-[calc(50vh-9rem)] flex-shrink-0"></div>
+
+        <img
+          src={logo}
+          alt="Shree Anna Abhiyan Logo"
+          className="size-96 object-contain flex-shrink-0"
+        />
+
+        <h1 className="text-3xl font-bold text-[var(--tertiary-color)] mt-6">
+          Shree Anna Abhiyan
+        </h1>
+
+        <div className="flex-grow"></div>
+
+        {/* 5. Attach the onClick event to the button */}
+        <button
+          onClick={handleContinue}
+          className="text-xl font-semibold bg-[var(--tertiary-color)] text-[var(--background-color)] py-5 w-11/12 max-w-sm rounded-full shadow-lg hover:opacity-90 transition-opacity mb-24"
+        >
+          Continue
+        </button>
+      </div>
+    </main>
+  );
+};
+
+export default LandingPage;
