@@ -61,12 +61,26 @@ const CartPage = () => {
 
   const handleIncrease = (product) => {
     const productId = getProductId(product);
-    setCartItems((prev) => prev.map(item => getProductId(item) === productId ? { ...item, quantity: item.quantity + 1 } : item));
+    setCartItems((prevItems) =>
+      prevItems.map(item =>
+        getProductId(item) === productId 
+          ? { ...item, quantity: item.quantity + 1 } 
+          : item
+      )
+    );
   };
 
   const handleDecrease = (product) => {
     const productId = getProductId(product);
-    setCartItems((prev) => prev.map(item => getProductId(item) === productId ? { ...item, quantity: item.quantity - 1 } : item).filter(item => item.quantity > 0));
+    setCartItems((prevItems) =>
+      prevItems
+        .map(item =>
+          getProductId(item) === productId 
+            ? { ...item, quantity: Math.max(0, item.quantity - 1) } 
+            : item
+        )
+        .filter(item => item.quantity > 0)
+    );
   };
   
   const addSuggestedItem = (item) => {
@@ -138,25 +152,25 @@ const CartPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFBF8]">
+    <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto">
         <div className="p-4">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center space-x-3">
               <button onClick={handleGoBack}>
-                <IoArrowBack className="text-2xl text-[#DE6B18]" />
+                <IoArrowBack className="text-2xl text-primary" />
               </button>
-              <h1 className="text-xl font-bold text-[#DE6B18]">Your Cart</h1>
+              <h1 className="text-xl font-bold text-primary">Your Cart</h1>
             </div>
-            <button onClick={clearCart} className="bg-[#DE6B18] text-white px-5 py-2 rounded-full font-semibold text-sm shadow-md">
+            <button onClick={clearCart} className="bg-primary text-white px-5 py-2 rounded-full font-semibold text-sm shadow-lg">
               Clear Cart
             </button>
           </div>
 
           {/* --- MODIFIED: Added horizontal margin (mx-2) --- */}
-          <div className="bg-[#FFE7D1] rounded-3xl mb-6 shadow-lg overflow-hidden flex flex-col mx-2">
+          <div className="bg-accent rounded-3xl mb-10 shadow-xl overflow-hidden flex flex-col mx-2">
             <div className="p-5">
-              <div className="flex justify-between items-center text-[#DE6B18]">
+              <div className="flex justify-between items-center text-primary">
                 <div className='font-bold'>
                   <h2 className="text-xl">Get more,</h2>
                   <p className="text-lg">For less!</p>
@@ -172,9 +186,9 @@ const CartPage = () => {
           </div>
 
           {/* --- MODIFIED: Added horizontal margin (mx-2) --- */}
-          <div className="bg-[#FFE7D1] rounded-3xl p-5 mb-6 shadow-lg mx-2">
+          <div className="bg-accent rounded-3xl p-5 mb-10 shadow-xl mx-2">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-[#DE6B18]">Review Your Order</h2>
+              <h2 className="text-lg font-bold text-primary">Review Your Order</h2>
               <span className="text-xs font-bold text-[#8C3F0B] bg-white px-3 py-1 rounded-md shadow-sm">{cartItems.length} Items</span>
             </div>
             {cartItems.length > 0 ? (
@@ -182,22 +196,22 @@ const CartPage = () => {
                 <div key={getProductId(item)} className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
                     <img src={item.prodImg} alt={item.prodName} className="w-12 h-12 rounded-lg object-cover mr-3" />
-                    <span className="font-semibold text-base text-[#DE6B18]">{item.prodName}</span>
+                    <span className="font-semibold text-base text-primary">{item.prodName}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <div className="flex items-center space-x-2 bg-white text-[#123B33] rounded-full px-2 py-0.5 shadow-sm">
-                      <button className="text-lg font-bold">-</button>
+                      <button className="text-lg font-bold" onClick={() => handleDecrease(item)}>-</button>
                       <span className="font-bold text-base w-4 text-center">{item.quantity}</span>
-                      <button className="text-lg font-bold">+</button>
+                      <button className="text-lg font-bold" onClick={() => handleIncrease(item)}>+</button>
                     </div>
-                    <span className="font-semibold text-base text-[#DE6B18] w-12 text-right">₹{item.price * item.quantity}</span>
+                    <span className="font-semibold text-base text-primary w-12 text-right">₹{item.price * item.quantity}</span>
                   </div>
                 </div>
               ))
             ) : <p className="text-center text-gray-500 py-4">Your cart is empty.</p>}
           </div>
 
-          <div className="text-center mb-8">
+          <div className="text-center mb-10">
             <p className="font-bold text-base text-[#A24D10]">Missing Something?</p>
             <p className="font-semibold text-sm text-[#A24D10] mb-4">Add more items!</p>
             <div className="flex justify-around">
@@ -217,21 +231,21 @@ const CartPage = () => {
             </div>
           </div>
 
-          <h2 className="text-xl font-bold text-[#291C08] mb-4">Bill Details</h2>
+          <h2 className="text-xl font-bold text-[#291C08] mb-4 px-4">Bill Details</h2>
           {/* --- MODIFIED: Added horizontal margin (mx-2) --- */}
-          <div className="bg-[#FFE7D1] rounded-3xl p-5 mb-6 shadow-lg mx-2">
+          <div className="bg-accent rounded-3xl p-5 mb-6 shadow-xl mx-2">
             <div className="space-y-3">
               {cartItems.map(item => (
                 <div key={getProductId(item)} className="flex justify-between text-base">
-                  <span className='font-medium text-[#DE6B18]'>{item.prodName}</span>
-                  <span className="font-medium text-[#DE6B18]">₹{item.price * item.quantity}</span>
+                  <span className='font-medium text-primary'>{item.prodName}</span>
+                  <span className="font-medium text-primary">₹{item.price * item.quantity}</span>
                 </div>
               ))}
             </div>
-            <div className="border-t border-[#DE6B18]/30 my-4"></div>
+            <div className="border-t border-primary/30 my-4"></div>
             <div className="flex justify-between font-bold text-lg">
-              <span className="text-[#DE6B18]">Grand Total:</span>
-              <span className='text-[#DE6B18]'>₹{total}</span>
+              <span className="text-primary">Grand Total:</span>
+              <span className='text-primary'>₹{total}</span>
             </div>
           </div>
 

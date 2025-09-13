@@ -11,7 +11,7 @@ const LoginRolePrompt = () => {
     if (selectedRole === "CUSTOMER") {
       navigate(`/homepage?token=${token}`);
     } else if (selectedRole === "SELLER") {
-      navigate(`/seller?token=${token}`);
+      navigate(`/seller/dashboard?token=${token}`);
     } else if (selectedRole === "ADMIN") {
       navigate(`/admin?token=${token}`);
     }

@@ -6,7 +6,7 @@ import Skeleton from "@mui/material/Skeleton";
 import ParseJwt from "../utils/ParseJWT";
 
 // --- ICONS & COMPONENTS ---
-import { FaStar } from "react-icons/fa";
+import { FaChevronLeft, FaStar } from "react-icons/fa";
 import { FiChevronLeft, FiArrowRight } from "react-icons/fi";
 import CartPane from "../components/homepage/CartPane";
 import nutritionImg from "../resources/productpage/nutrition facts.png";
@@ -154,50 +154,56 @@ const ProductPage = () => {
   return (
     <div className="bg-[var(--background-color)] min-h-screen">
       <header className="relative w-full h-[40vh]">
-        <img src={currentProduct.prodImg} alt={currentProduct.prodName} className="w-full h-full object-cover" style={{ clipPath: "ellipse(100% 80% at 50% 20%)" }} />
-        <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-20" style={{ clipPath: "ellipse(100% 80% at 50% 20%)" }}></div>
-        <button onClick={() => navigate(-1)} className="absolute top-5 left-4 z-20 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors">
+        <img src={currentProduct.prodImg} alt={currentProduct.prodName} className="w-full h-full object-cover rounded-b-[50px]" />
+        <div className="absolute top-0 left-0 w-full h-full bg-opacity-20 rounded-b-[50px]"></div>
+        {/* <button onClick={() => navigate(-1)} className="absolute top-5 left-4 z-20 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors">
           <FiChevronLeft size={24} className="text-gray-800" />
+        </button> */}
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute top-4 left-4 p-2 bg-background bg-opacity-75 rounded-full shadow-md"
+        >
+          <FaChevronLeft className="text-tertiary" />
         </button>
       </header>
 
-      <main className="px-5 pt-24 -mt-12 z-10 relative">
+      <main className="px-5 pt-24 -mt-16 z-10 relative">
         <section className="flex justify-between items-start">
-          <h1 className="text-4xl font-extrabold text-[var(--primary-color)] leading-tight" dangerouslySetInnerHTML={{ __html: currentProduct.prodName.replace(" ", "<br />") }} />
-          <div className="flex flex-col items-center gap-2">
-            <div className="bg-[var(--secondary-color)] text-[var(--tertiary-color)] font-bold py-1 px-5 rounded-full text-lg">₹{currentProduct.price}</div>
-            <button onClick={() => handleAddToCart(currentProduct)} className="bg-[var(--secondary-color)] text-[var(--tertiary-color)] font-bold py-1 px-6 rounded-full text-lg">Add</button>
+          <h1 className="text-4xl font-bold text-primary leading-tight" dangerouslySetInnerHTML={{ __html: currentProduct.prodName.replace(" ", "<br />") }} />
+          <div className="flex flex-col items-end gap-2">
+            <div className="bg-accent text-primary border-primary border-2 font-bold py-1 px-5 rounded-full text-lg">₹{currentProduct.price}</div>
+            <button onClick={() => handleAddToCart(currentProduct)} className="bg-accent text-primary border-primary border-2 font-bold py-1 px-6 rounded-full text-lg">Add</button>
           </div>
         </section>
 
-        <p className="mt-4 text-gray-600">{currentProduct.prodDesc}</p>
+        <p className="mt-4">{currentProduct.prodDesc}</p>
 
         <section className="text-center my-8 p-4 bg-[var(--accent-color)] rounded-2xl shadow-sm">
-          <h3 className="text-2xl font-bold text-[var(--primary-color)] mb-3">Rate this Product</h3>
+          <h3 className="text-2xl font-bold text-primary mb-3">Rate this Product</h3>
           {renderStarRating()}
-          {userRating > 0 && (<p className="text-sm text-gray-600 mt-3">You rated this {userRating} star{userRating !== 1 ? "s" : ""}. Thank you!</p>)}
+          {userRating > 0 && (<p className="text-sm mt-3">You rated this {userRating} star{userRating !== 1 ? "s" : ""}. Thank you!</p>)}
         </section>
 
         <section className="mt-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-[var(--primary-color)]">Ingredients</h2>
-            <hr className="flex-grow border-t-[3px] border-[var(--primary-color)]" />
+            <h2 className="text-2xl font-semibold text-primary">Ingredients</h2>
+            <hr className="flex-grow border-t-[3px] border-primatext-primary" />
           </div>
-          <p className="mt-2 text-gray-600">{currentProduct.ingredients || "Ingredients are not available for this product."}</p>
+          <p className="mt-2">{currentProduct.ingredients || "Ingredients are not available for this product."}</p>
         </section>
 
         <section className="mt-6">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-[var(--primary-color)]">Nutrition Facts</h2>
-            <hr className="flex-grow border-t-[3px] border-[var(--primary-color)]" />
+            <h2 className="text-2xl font-semibold text-primary">Nutrition Facts</h2>
+            <hr className="flex-grow border-t-[3px] border-primatext-primary" />
           </div>
           <img src={nutritionImg} alt="Nutrition Facts" className="w-full mt-2 rounded-lg border border-gray-200" />
         </section>
 
         <div className="my-8">
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-2xl font-bold text-[var(--primary-color)]">More Products</h2>
-            <hr className="flex-grow border-t-[3px] border-[var(--primary-color)]" />
+            <h2 className="text-2xl font-semibold text-primary">More Products</h2>
+            <hr className="flex-grow border-t-[3px] border-primatext-primary" />
           </div>
           {loadingSuggestions ? (
             <div className="flex justify-between px-4">{[1, 2, 3].map((index) => (<div key={index} className="relative w-24 h-24 bg-gray-200 rounded-[15px] animate-pulse"></div>))}</div>
@@ -217,8 +223,8 @@ const ProductPage = () => {
           )}
         </div>
 
-        <div className="mt-12 mb-4">
-          <button onClick={() => navigate("/cart")} className="w-full flex items-center justify-center gap-4 bg-[var(--primary-color)] text-white font-bold py-4 rounded-2xl text-xl shadow-lg">
+        <div className="mt-12 mb-10">
+          <button onClick={() => navigate("/cart")} className="w-full flex items-center justify-center gap-4 bg-primary text-background font-semibold py-4 rounded-2xl text-xl shadow-lg">
             Go to Cart <FiArrowRight size={24} />
           </button>
         </div>
