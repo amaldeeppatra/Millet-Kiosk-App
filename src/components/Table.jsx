@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiArrowUp, FiArrowDown } from 'react-icons/fi';
 
-const DataTable = ({ data, columns, onSort, sortConfig }) => {
+const Table = ({ data, columns, onSort, sortConfig }) => {
     
     // Helper function to render the correct sorting arrow (up, down, or none)
     const renderSortArrow = (columnKey) => {
@@ -89,4 +89,4 @@ const DataTable = ({ data, columns, onSort, sortConfig }) => {
     );
 };
 
-export default DataTable;
+export default Table;
