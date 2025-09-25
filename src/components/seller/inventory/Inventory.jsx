@@ -34,12 +34,23 @@ const Inventory = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, totalItems: 0 });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
     const [sortConfig, setSortConfig] = useState({ key: 'stock', direction: 'ascending' });
     const [searchTerm, setSearchTerm] = useState('');
     const [message, setMessage] = useState({});
     const [userInfo, setUserInfo] = useState(null);
     const [sellerId, setSellerId] = useState(null);
+    const [quantity, setQuantity] = useState({});
+
+    const handleQuantityChange = (prodId, quantity) => {
+        setQuantity(prev => ({
+            ...prev,
+            [prodId]: quantity
+        }));
+        console.log(quantity);
+    }
 
     const handleMessageChange = (prodId, message) => {
         setMessage(prev => ({
@@ -93,13 +104,14 @@ const Inventory = () => {
     }, []);
 
     const sendRequest = async (prodId) => {
-        try{
-            console.log("Sending request for product ID:", prodId, "with message:", message[prodId] || '');
+        try {
+            console.log("Sending request for product ID:", prodId, "with message:", message[prodId] || '', "and quantity:", quantity[prodId] || 1);
             const response = await axios.post(`${API_URL}/request/${sellerId}`, {
-            prodId,
-            message: message[prodId] || ''
-        });
-        console.log("Response from server:", response.data);
+                prodId,
+                message: message[prodId] || '',
+                quantity: parseInt(quantity[prodId]) || 1
+            });
+            console.log("Response from server:", response.data);
         } catch (error) {
             console.error("Error sending request:", error);
         }
@@ -147,13 +159,17 @@ const Inventory = () => {
             render: (row) => row.stock,
         },
         {
-            header: 'Action',
-            key: 'action',
+            header: 'Qty to Request',
+            key: 'quantity',
             width: '15%',
             render: (row) => (
-                <div className="flex items-center gap-2">
-                    <button className="bg-accent px-4 py-2 rounded-md hover:bg-secondary" onClick={()=>sendRequest(row.prodId)}>Send Request</button>
-                </div>
+                <input
+                    type="number"
+                    placeholder='Enter quantity'
+                    value={quantity[row.prodId] || ''}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                    onChange={(e) => handleQuantityChange(row.prodId, e.target.value)}
+                />
             ),
         },
         {
@@ -168,11 +184,23 @@ const Inventory = () => {
                 onChange={(e) => handleMessageChange(row.prodId, e.target.value)}
             />),
         },
-    ], [message]);
+        {
+            header: 'Action',
+            key: 'action',
+            width: '15%',
+            render: (row) => (
+                <div className="flex items-center gap-2">
+                    <button className="bg-accent px-4 py-2 rounded-md hover:bg-secondary" onClick={() => sendRequest(row.prodId)}>Send Request</button>
+                </div>
+            ),
+        },
+    ], [message, quantity]);
 
-    // Memoized processing for filtering, sorting, and pagination
+    // Memoized processing for filtering and sorting
     const processedData = useMemo(() => {
         let filteredItems = [...products];
+        
+        // Filter by search term
         if (searchTerm) {
             const lowercasedFilter = searchTerm.toLowerCase();
             filteredItems = filteredItems.filter(p =>
@@ -181,6 +209,8 @@ const Inventory = () => {
                 (p.prodId?.toLowerCase().includes(lowercasedFilter))
             );
         }
+        
+        // Sort items
         if (sortConfig.key) {
             filteredItems.sort((a, b) => {
                 let aValue = a[sortConfig.key];
@@ -190,10 +220,25 @@ const Inventory = () => {
                 return 0;
             });
         }
-        setPagination(prev => ({ ...prev, totalItems: filteredItems.length, totalPages: Math.ceil(filteredItems.length / ITEMS_PER_PAGE) }));
-        const startIndex = (pagination.currentPage - 1) * ITEMS_PER_PAGE;
-        return filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    }, [products, searchTerm, sortConfig, pagination.currentPage]);
+        
+        return filteredItems;
+    }, [products, searchTerm, sortConfig]);
+
+    // Calculate pagination
+    useEffect(() => {
+        setTotalItems(processedData.length);
+        setTotalPages(Math.ceil(processedData.length / ITEMS_PER_PAGE));
+        // Reset to first page if current page exceeds total pages
+        if (currentPage > Math.ceil(processedData.length / ITEMS_PER_PAGE) && processedData.length > 0) {
+            setCurrentPage(1);
+        }
+    }, [processedData.length, currentPage]);
+
+    // Get paginated data
+    const paginatedData = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return processedData.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [processedData, currentPage]);
 
     return (
         <div className="space-y-4">
@@ -224,7 +269,7 @@ const Inventory = () => {
                         <div className="text-center py-10 text-danger">{error}</div>
                     ) : (
                         <Table
-                            data={processedData}
+                            data={paginatedData}
                             columns={columns}
                             onSort={handleSort}
                             sortConfig={sortConfig}
@@ -234,11 +279,11 @@ const Inventory = () => {
 
                 {!loading && !error && products.length > 0 && (
                     <Pagination
-                        currentPage={pagination.currentPage}
-                        totalPages={pagination.totalPages}
-                        totalItems={pagination.totalItems}
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalItems}
                         itemsPerPage={ITEMS_PER_PAGE}
-                        onPageChange={(page) => setPagination(p => ({ ...p, currentPage: page }))}
+                        onPageChange={setCurrentPage}
                     />
                 )}
             </div>
