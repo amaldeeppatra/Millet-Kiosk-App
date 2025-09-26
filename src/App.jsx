@@ -22,6 +22,7 @@ import Dashboard from './components/seller/dashboard/Dashboard'
 import Orders from './components/seller/orders/Orders'
 import Inventory from './components/seller/inventory/Inventory'
 import Restocks from './components/seller/restocks/Restocks'
+import Products from './components/admin/products/Products'
 
 
 const App = () => {
@@ -143,7 +144,29 @@ const appRouter = createBrowserRouter(
         },
         {
           path: "/admin",
-          element: <AdminPage />
+          element: <AdminPage />, // The parent component with Sidebar and Header
+
+          children: [
+            
+            {
+              index: true,
+              element: <Products />
+            },
+            // Child routes render inside the SellerLayout's <Outlet />
+            {
+              path: "products",
+              element: <Products/>
+            },
+            // {
+            //   path: "orders",
+            //   element: <Orders />
+            // },
+            // {
+            //   path: "inventory",
+            //   element: <Inventory />
+            // },
+          ]
+
         },
         {
           path: "/choose-role",
