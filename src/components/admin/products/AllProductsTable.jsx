@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
-import { FiSearch, FiFilter, FiDownload, FiEdit, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
+import { FiSearch, FiEdit, FiTrash2, FiCheck, FiX } from 'react-icons/fi'; // Removed FiFilter, FiDownload
 import Table from '../../Table';
 import Pagination from '../../Pagination';
 import Skeleton from '@mui/material/Skeleton';
@@ -8,6 +8,7 @@ import Skeleton from '@mui/material/Skeleton';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const ITEMS_PER_PAGE = 8;
 
+// ... (Helper components and functions like TableSkeleton and formatDecimal are unchanged)
 const TableSkeleton = () => (
     <div className="p-6">
         {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
@@ -25,7 +26,9 @@ const formatDecimal = (decimalValue) => {
     return isNaN(num) ? 0 : num;
 };
 
+
 const AllProductsTable = () => {
+    // ... (All state, refs, and functions remain exactly the same)
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -38,7 +41,7 @@ const AllProductsTable = () => {
     
     const nameInputRef = useRef(null);
 
-    const fetchProducts = useCallback(async () => { /* ... (unchanged) */ 
+    const fetchProducts = useCallback(async () => { 
         setLoading(true);
         setError(null);
         try {
@@ -57,45 +60,31 @@ const AllProductsTable = () => {
 
     const handleEditClick = (product) => {
         setEditingRowId(product.prodId);
-        setEditedData({
-            ...product,
-            price: formatDecimal(product.price),
-            rating: formatDecimal(product.rating)
-        });
-    };
+        setEditedData({ ...product, price: formatDecimal(product.price), rating: formatDecimal(product.rating) });
+     };
     const handleCancelEdit = () => { setEditingRowId(null); setEditedData({}); };
-
-    // ======================= FIX 1: PARSE NUMBERS =======================
     const handleInputChange = (e) => {
         const { name, value, type } = e.target;
-        // If the input is a number type, parse it. Otherwise, keep it as a string.
         const parsedValue = type === 'number' ? parseFloat(value) : value;
         setEditedData(prev => ({ ...prev, [name]: parsedValue }));
     };
-    // ====================================================================
 
     const handleUpdate = async (productId) => {
-        // ======================= FIX 2: CLEAN THE PAYLOAD =======================
-        // Create a copy of the data to be sent
         const payload = { ...editedData };
-
-        // Remove keys that should not be updated directly in the body
         delete payload._id;
         delete payload.prodId; 
-        // ========================================================================
+        
         try {
-            // Send the clean payload
-            await axios.patch(`${API_URL}/product/update/${productId}`, payload);
+            await axios.patch(`${API_URL}/product/${productId}`, payload);
             setEditingRowId(null);
             fetchProducts();
         } catch (err) {
             console.error(`Failed to update product ${productId}:`, err);
-            // This error message often indicates a backend validation failure
             alert("Failed to update product. Please check the console for details.");
         }
     };
 
-    const handleDelete = async (productId, productName) => { /* ... (unchanged) */
+    const handleDelete = async (productId, productName) => {
         if (window.confirm(`Are you sure you want to delete "${productName}"?`)) {
             try {
                 await axios.delete(`${API_URL}/product/delete/${productId}`);
@@ -106,10 +95,10 @@ const AllProductsTable = () => {
             }
         }
      };
-    const handleSort = (key) => { /* ... (unchanged) */
+    const handleSort = (key) => {
         setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'ascending' ? 'descending' : 'ascending' }));
      };
-    const processedProducts = useMemo(() => { /* ... (unchanged) */
+    const processedProducts = useMemo(() => {
         let filteredItems = [...products];
         if (searchTerm) {
              const lowercasedFilter = searchTerm.toLowerCase();
@@ -132,51 +121,31 @@ const AllProductsTable = () => {
         return filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
     }, [products, searchTerm, sortConfig, pagination.currentPage]);
 
-    const inputClass = "w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm";
-
     const columns = useMemo(() => [
         {
-            header: 'Image', 
-            key: 'prodImg', 
-            width: '15%',
-            render: (row) => {
-                const imageUrl = row.prodImg || 'https://via.placeholder.com/40';
-                
-                if (editingRowId === row.prodId) {
-                    return <input type="text" name="prodImg" value={editedData.prodImg || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" placeholder="Image URL" />;
-                } else {
-                    return (
-                        // ======================= THE FIX =======================
-                        // Add the referrerPolicy="no-referrer" attribute here
-                        <img 
-                            src={imageUrl} 
-                            alt={row.prodName} 
-                            className="h-10 w-10 rounded-lg object-cover" 
-                            referrerPolicy="no-referrer" 
-                        />
-                        // =======================================================
-                    );
-                }
-            }
+            header: 'Image', key: 'prodImg', width: '15%',
+            render: (row) => editingRowId === row.prodId
+                ? <input type="text" name="prodImg" value={editedData.prodImg || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" placeholder="Image URL" />
+                : <img src={row.prodImg || 'https://via.placeholder.com/40'} alt={row.prodName} className="h-10 w-10 rounded-full object-cover" referrerPolicy="no-referrer" />
         },
         { header: 'Product ID', key: 'prodId', width: '15%', isSortable: true },
         {
             header: 'Name', key: 'prodName', width: '20%', isSortable: true,
             render: (row) => editingRowId === row.prodId
-                ? <input type="text" name="prodName" value={editedData.prodName || ''} onChange={handleInputChange} className={inputClass} ref={nameInputRef} />
+                ? <input type="text" name="prodName" value={editedData.prodName || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" ref={nameInputRef} />
                 : row.prodName
         },
         {
             header: 'Category', key: 'category', width: '15%', isSortable: true,
-            render: (row) => editingRowId === row.prodId ? <input type="text" name="category" value={editedData.category || ''} onChange={handleInputChange} className={inputClass} /> : row.category
+            render: (row) => editingRowId === row.prodId ? <input type="text" name="category" value={editedData.category || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" /> : row.category
         },
         {
             header: 'Price', key: 'price', width: '10%', isSortable: true,
-            render: (row) => editingRowId === row.prodId ? <input type="number" name="price" value={editedData.price || ''} onChange={handleInputChange} className={inputClass} /> : `₹${formatDecimal(row.price).toFixed(2)}`
+            render: (row) => editingRowId === row.prodId ? <input type="number" name="price" value={editedData.price || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" /> : `₹${formatDecimal(row.price).toFixed(2)}`
         },
         {
             header: 'Stock', key: 'stock', width: '10%', isSortable: true,
-            render: (row) => editingRowId === row.prodId ? <input type="number" name="stock" value={editedData.stock || ''} onChange={handleInputChange} className={inputClass} /> : <span className={`px-3 py-1 rounded-full text-xs font-semibold ${row.stock < 10 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{row.stock}</span>
+            render: (row) => editingRowId === row.prodId ? <input type="number" name="stock" value={editedData.stock || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" /> : <span className={`px-3 py-1 rounded-full text-xs font-semibold ${row.stock < 10 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{row.stock}</span>
         },
         { header: 'Rating', key: 'rating', width: '10%', isSortable: true, render: (row) => <span className="flex items-center">{formatDecimal(row.rating).toFixed(1)} <span className="ml-1 text-yellow-500">★</span></span> },
         {
@@ -201,10 +170,9 @@ const AllProductsTable = () => {
                     <FiSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-text-light" />
                     <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search for id, name, category" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none" />
                 </div>
-                <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold hover:bg-gray-50"><FiFilter /> Filter</button>
-                    <button className="flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold hover:bg-gray-50"><FiDownload /> Export</button>
-                </div>
+                {/* ======================= BUTTONS REMOVED ======================= */}
+                {/* The div containing the Filter and Export buttons has been deleted. */}
+                {/* =============================================================== */}
             </div>
             {/* Table and Pagination */}
             <div className="bg-background rounded-xl shadow-md flex flex-col" style={{ height: 'calc(100vh - 20rem)' }}>
