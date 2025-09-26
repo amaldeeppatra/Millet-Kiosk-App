@@ -20,16 +20,18 @@ const Products = () => {
             </div>
 
             {/* Tabs for Create New Product and All Products */}
-            <div className="rounded-xl ">
+             <div className="rounded-xl ">
                 <Tabs tabs={tabs} activeTab={activeTab} onTabChange={(tab) => setActiveTab(tab)} />
             </div>
 
-            {/* Conditional rendering based on active tab */}
-            {activeTab === 'create' ? (
-                <CreateProductForm />
-            ) : (
-                <AllProductsTable />
-            )}
+            {/* Add this div with mt-4 for spacing */}
+            <div className="mt-4">
+                {activeTab === 'create' ? (
+                    <CreateProductForm />
+                ) : (
+                    <AllProductsTable />
+                )}
+            </div>
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import axios from 'axios';
-import { FiSearch, FiEdit, FiTrash2, FiCheck, FiX } from 'react-icons/fi'; // Removed FiFilter, FiDownload
+import { FiSearch, FiEdit, FiTrash2, FiCheck, FiX } from 'react-icons/fi';
 import Table from '../../Table';
 import Pagination from '../../Pagination';
 import Skeleton from '@mui/material/Skeleton';
@@ -8,7 +8,6 @@ import Skeleton from '@mui/material/Skeleton';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const ITEMS_PER_PAGE = 8;
 
-// ... (Helper components and functions like TableSkeleton and formatDecimal are unchanged)
 const TableSkeleton = () => (
     <div className="p-6">
         {[...Array(ITEMS_PER_PAGE)].map((_, i) => (
@@ -26,9 +25,7 @@ const formatDecimal = (decimalValue) => {
     return isNaN(num) ? 0 : num;
 };
 
-
 const AllProductsTable = () => {
-    // ... (All state, refs, and functions remain exactly the same)
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -121,31 +118,34 @@ const AllProductsTable = () => {
         return filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
     }, [products, searchTerm, sortConfig, pagination.currentPage]);
 
+    // Reusable class for editing inputs with the new background color
+    const inputClass = "w-full px-2 py-1 border border-gray-300 rounded-md bg-[#FAF7E7] focus:outline-none focus:ring-2 focus:ring-accent text-sm";
+
     const columns = useMemo(() => [
         {
             header: 'Image', key: 'prodImg', width: '15%',
             render: (row) => editingRowId === row.prodId
-                ? <input type="text" name="prodImg" value={editedData.prodImg || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" placeholder="Image URL" />
+                ? <input type="text" name="prodImg" value={editedData.prodImg || ''} onChange={handleInputChange} className={inputClass} placeholder="Image URL" />
                 : <img src={row.prodImg || 'https://via.placeholder.com/40'} alt={row.prodName} className="h-10 w-10 rounded-full object-cover" referrerPolicy="no-referrer" />
         },
         { header: 'Product ID', key: 'prodId', width: '15%', isSortable: true },
         {
             header: 'Name', key: 'prodName', width: '20%', isSortable: true,
             render: (row) => editingRowId === row.prodId
-                ? <input type="text" name="prodName" value={editedData.prodName || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" ref={nameInputRef} />
+                ? <input type="text" name="prodName" value={editedData.prodName || ''} onChange={handleInputChange} className={inputClass} ref={nameInputRef} />
                 : row.prodName
         },
         {
             header: 'Category', key: 'category', width: '15%', isSortable: true,
-            render: (row) => editingRowId === row.prodId ? <input type="text" name="category" value={editedData.category || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" /> : row.category
+            render: (row) => editingRowId === row.prodId ? <input type="text" name="category" value={editedData.category || ''} onChange={handleInputChange} className={inputClass} /> : row.category
         },
         {
             header: 'Price', key: 'price', width: '10%', isSortable: true,
-            render: (row) => editingRowId === row.prodId ? <input type="number" name="price" value={editedData.price || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" /> : `₹${formatDecimal(row.price).toFixed(2)}`
+            render: (row) => editingRowId === row.prodId ? <input type="number" name="price" value={editedData.price || ''} onChange={handleInputChange} className={inputClass} /> : `₹${formatDecimal(row.price).toFixed(2)}`
         },
         {
             header: 'Stock', key: 'stock', width: '10%', isSortable: true,
-            render: (row) => editingRowId === row.prodId ? <input type="number" name="stock" value={editedData.stock || ''} onChange={handleInputChange} className="w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 focus:outline-none focus:ring-2 focus:ring-accent text-sm" /> : <span className={`px-3 py-1 rounded-full text-xs font-semibold ${row.stock < 10 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{row.stock}</span>
+            render: (row) => editingRowId === row.prodId ? <input type="number" name="stock" value={editedData.stock || ''} onChange={handleInputChange} className={inputClass} /> : <span className={`px-3 py-1 rounded-full text-xs font-semibold ${row.stock < 10 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{row.stock}</span>
         },
         { header: 'Rating', key: 'rating', width: '10%', isSortable: true, render: (row) => <span className="flex items-center">{formatDecimal(row.rating).toFixed(1)} <span className="ml-1 text-yellow-500">★</span></span> },
         {
@@ -164,18 +164,14 @@ const AllProductsTable = () => {
 
     return (
         <div className="space-y-4">
-            {/* Search and Filter UI */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                  <div className="relative w-full md:w-2/5">
                     <FiSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-text-light" />
                     <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search for id, name, category" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none" />
                 </div>
-                {/* ======================= BUTTONS REMOVED ======================= */}
-                {/* The div containing the Filter and Export buttons has been deleted. */}
-                {/* =============================================================== */}
             </div>
-            {/* Table and Pagination */}
-            <div className="bg-background rounded-xl shadow-md flex flex-col" style={{ height: 'calc(100vh - 20rem)' }}>
+            {/* ======================= COLOR CHANGE HERE ======================= */}
+            <div className="bg-[#FAF7E7] rounded-xl shadow-md flex flex-col" style={{ height: 'calc(100vh - 20rem)' }}>
                 <div className="flex-grow">
                     {loading ? <TableSkeleton /> : error ? <div className="text-center py-10 text-red-500">{error}</div> :
                         <Table data={processedProducts} columns={columns} onSort={handleSort} sortConfig={sortConfig} />
