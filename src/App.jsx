@@ -23,6 +23,8 @@ import Orders from './components/seller/orders/Orders'
 import Inventory from './components/seller/inventory/Inventory'
 import Restocks from './components/seller/restocks/Restocks'
 import Products from './components/admin/products/Products'
+import Sellers from './components/admin/sellers/Sellers'
+import Requests from './components/admin/requests/Requests'
 
 
 const App = () => {
@@ -155,16 +157,16 @@ const appRouter = createBrowserRouter(
             // Child routes render inside the SellerLayout's <Outlet />
             {
               path: "products",
-              element: <Products/>
+              element: <Products />
             },
-            // {
-            //   path: "orders",
-            //   element: <Orders />
-            // },
-            // {
-            //   path: "inventory",
-            //   element: <Inventory />
-            // },
+            {
+              path: "sellers",
+              element: <Sellers />
+            },
+            {
+              path: "requests",
+              element: <Requests />
+            },
           ]
 
         },
