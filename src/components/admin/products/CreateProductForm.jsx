@@ -59,7 +59,7 @@ const CreateProductForm = () => {
             setLoading(false);
         }
     };
-    
+
     // Common classes for form inputs with the new background color
     const inputClass = `w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-light bg-[#FAF7E7]`;
     const errorInputClass = `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 bg-[#FAF7E7] border-red-500 focus:ring-red-400`;
@@ -68,9 +68,9 @@ const CreateProductForm = () => {
         // Replaced shadow-md with a line border
         <div className="p-6 bg-background rounded-xl border border-gray-200">
             <h2 className="text-xl font-semibold text-text-dark mb-6">Add New Product</h2>
-            
+
             {serverMessage.content && (
-                <div className={`mb-4 p-3 rounded-lg text-sm ${ serverMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }`}>
+                <div className={`mb-4 p-3 rounded-lg text-sm ${serverMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {serverMessage.content}
                 </div>
             )}
@@ -89,13 +89,13 @@ const CreateProductForm = () => {
                 </div>
 
                 {/* Row 2: Reordered Image/Category and Description */}
-                <div className="flex flex-col space-y-6">
+                <div className="flex flex-col space-y-8">
                     <div>
                         <label htmlFor="prodImg" className="block text-sm font-medium text-text-dark mb-1">Product Image URL*</label>
                         <input type="text" id="prodImg" value={formData.prodImg} onChange={handleChange} className={errors.prodImg ? errorInputClass : inputClass} placeholder="https://example.com/image.jpg" />
                         {errors.prodImg && <p className="text-red-500 text-xs mt-1">{errors.prodImg}</p>}
                     </div>
-                     <div>
+                    <div>
                         <label htmlFor="category" className="block text-sm font-medium text-text-dark mb-1">Select Category</label>
                         <select id="category" value={formData.category} onChange={handleChange} className={inputClass}>
                             <option value="">Select Category</option>
@@ -106,9 +106,9 @@ const CreateProductForm = () => {
                         </select>
                     </div>
                 </div>
-                 <div>
+                <div>
                     <label htmlFor="prodDesc" className="block text-sm font-medium text-text-dark mb-1">Product Description*</label>
-                    <textarea id="prodDesc" rows="6" value={formData.prodDesc} onChange={handleChange} className={`${errors.prodDesc ? errorInputClass : inputClass} resize-y h-full`} placeholder="Brief description of the product"></textarea>
+                    <textarea id="prodDesc" rows="" value={formData.prodDesc} onChange={handleChange} className={`${errors.prodDesc ? errorInputClass : inputClass} resize-y h-28`} placeholder="Brief description of the product"></textarea>
                     {errors.prodDesc && <p className="text-red-500 text-xs mt-1">{errors.prodDesc}</p>}
                 </div>
 
@@ -119,13 +119,13 @@ const CreateProductForm = () => {
                         <input type="number" id="stock" value={formData.stock} onChange={handleChange} className={errors.stock ? errorInputClass : inputClass} placeholder="0" />
                         {errors.stock && <p className="text-red-500 text-xs mt-1">{errors.stock}</p>}
                     </div>
-                     <div>
+                    <div>
                         <label htmlFor="price" className="block text-sm font-medium text-text-dark mb-1">Price*</label>
                         <input type="number" id="price" value={formData.price} onChange={handleChange} className={errors.price ? errorInputClass : inputClass} placeholder="0.00" step="0.01" />
                         {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}
                     </div>
                 </div>
-                 <div>
+                <div>
                     <label htmlFor="ingredients" className="block text-sm font-medium text-text-dark mb-1">Ingredients</label>
                     <textarea id="ingredients" rows="6" value={formData.ingredients} onChange={handleChange} className={`${inputClass} resize-y h-full`} placeholder="List of ingredients"></textarea>
                 </div>
@@ -138,7 +138,7 @@ const CreateProductForm = () => {
 
                 {/* Submit Button */}
                 <div className="md:col-span-2 flex justify-end mt-4">
-                    <button type="submit" disabled={loading} className="bg-[#DE6B18] text-white font-semibold px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button type="submit" disabled={loading} className="bg-primary text-white font-semibold px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                         {loading ? 'Adding Product...' : 'Add Product'}
                     </button>
                 </div>
