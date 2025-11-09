@@ -14,8 +14,7 @@ import {
 } from "react-icons/fa";
 import Skeleton from "@mui/material/Skeleton";
 import Sidebar from "../components/admin/Sidebar";
-import { CgProfile } from "react-icons/cg";
-import { FiChevronsDown } from "react-icons/fi";
+import { FiLogOut } from "react-icons/fi";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -47,6 +46,11 @@ const AdminPage = () => {
     }
   }, [location, navigate]);
 
+  const handleLogout = () => {
+    Cookies.remove('token');
+    navigate('/login');
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -54,19 +58,23 @@ const AdminPage = () => {
         <header className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl font-bold text-text-dark">Welcome, {userInfo?.user?.name} 👋</h2>
-            <p className="text-text-light">Today is Saturday, 11th November 2022.</p>
+            <p className="text-text-light">
+              Today is {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              })}.
+            </p>
           </div>
           <div className="flex items-center gap-4">
-            <FaBell className="text-2xl text-text-light cursor-pointer" />
-            <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-              <CgProfile className="w-8 h-8 text-text-light" />
-            </div>
-
-            <div>
-              <p className="font-bold text-text-dark">Otor John</p>
-              <p className="text-sm text-text-light">HR Office</p>
-            </div>
-            <FiChevronsDown className="text-xl text-text-light cursor-pointer" />
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm"
+            >
+              <FiLogOut className="text-lg" />
+              <span>Logout</span>
+            </button>
           </div>
         </header>
 
