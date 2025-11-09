@@ -1,7 +1,7 @@
 import './index.css'
 import LandingPage from './pages/LandingPage'
 // import LogInWithPhone from './pages/LogInWithPhone'
-import { createBrowserRouter,Outlet,RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom'
 import ReactDOM from 'react-dom/client'
 import LoginGoogle from './pages/LoginGoogle'
 import HomePage from './pages/HomePage'
@@ -15,51 +15,61 @@ import MyProfile from './pages/MyProfile'
 import ViewOrders from './pages/ViewOrders'
 import OrderDetails from './pages/OrderDetails'
 import ErrorPage from './pages/ErrorPage'
+import SellerPage from './pages/SellerPage'
+import AdminPage from './pages/AdminPage'
+import LoginRolePrompt from './pages/LoginRolePrompt'
+import Dashboard from './components/seller/dashboard/Dashboard'
+import Orders from './components/seller/orders/Orders'
+import Inventory from './components/seller/inventory/Inventory'
+import Restocks from './components/seller/restocks/Restocks'
+import Products from './components/admin/products/Products'
+import Sellers from './components/admin/sellers/Sellers'
+import Requests from './components/admin/requests/Requests'
 
 
-const App=()=>{
-  return(
-      <>
+const App = () => {
+  return (
+    <>
       <Outlet />
-      </>
-     
+    </>
+
   )
 }
 
 const appRouter = createBrowserRouter(
   [
     {
-      path:"/",
-      element:<App/>,
-      children:[
+      path: "/",
+      element: <App />,
+      children: [
         {
-          path:"/",
-          element:[<LandingPage/>]
+          path: "/",
+          element: [<LandingPage />]
         },
         {
-          path:"/login",
-          element:[<LoginGoogle/>]
+          path: "/login",
+          element: [<LoginGoogle />]
         },
         // {
         //   path:"/login-phone",
         //   element:[<LogInWithPhone/>]
         // },
         {
-          path:"/homepage",
-          element:(
-              <HomePage />
+          path: "/homepage",
+          element: (
+            <HomePage />
           )
         },
         {
-          path:"/search",
-          element:(
-              <SearchResultsPage />
+          path: "/search",
+          element: (
+            <SearchResultsPage />
           )
         },
         {
           path: "/product/:prodId",
           element: (
-              <ProductPage />
+            <ProductPage />
           )
         },
         {
@@ -73,36 +83,96 @@ const appRouter = createBrowserRouter(
         {
           path: "/categories",
           element: (
-            <ProductsByCat/>
+            <ProductsByCat />
           )
         },
         {
           path: "/order-success",
           element: (
-            <OrderSuccess/>
+            <OrderSuccess />
           )
         },
         {
           path: "/profile",
           element: (
-            <MyProfile/>
+            <MyProfile />
           )
         },
         {
           path: "/orders",
           element: (
-            <ViewOrders/>
+            <ViewOrders />
           )
         },
         {
           path: "/order/:orderId",
           element: (
-            <OrderDetails/>
+            <OrderDetails />
           )
         },
         {
           path: "*",
-          element: <ErrorPage/>
+          element: <ErrorPage />
+        },
+        {
+          path: "/seller",
+          element: <SellerPage />, // The parent component with Sidebar and Header
+          children: [
+            // This "index" route renders the Dashboard component
+            // when the user navigates to the parent's path ("/seller").
+            {
+              index: true,
+              element: <Dashboard />
+            },
+            // Child routes render inside the SellerLayout's <Outlet />
+            {
+              path: "dashboard",
+              element: <Dashboard />
+            },
+            {
+              path: "orders",
+              element: <Orders />
+            },
+            {
+              path: "inventory",
+              element: <Inventory />
+            },
+            {
+              // Path matches the NavLink in your Sidebar component
+              path: "restock",
+              element: <Restocks />
+            }
+          ]
+        },
+        {
+          path: "/admin",
+          element: <AdminPage />, // The parent component with Sidebar and Header
+
+          children: [
+            
+            {
+              index: true,
+              element: <Products />
+            },
+            // Child routes render inside the SellerLayout's <Outlet />
+            {
+              path: "products",
+              element: <Products />
+            },
+            {
+              path: "sellers",
+              element: <Sellers />
+            },
+            {
+              path: "requests",
+              element: <Requests />
+            },
+          ]
+
+        },
+        {
+          path: "/choose-role",
+          element: <LoginRolePrompt />
         }
       ]
     }

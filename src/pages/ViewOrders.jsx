@@ -58,7 +58,7 @@ const ViewOrders = () => {
     <div className="min-h-screen bg-[url('./resources/homepage/Homepage.png')] bg-cover bg-center p-4">
       <div className="pt-8 pb-4 flex items-center">
         <button 
-          onClick={() => navigate('/profile')}
+          onClick={() => navigate('/profile')} // Change this to navigate to homepage
           className="p-3 bg-[#291C08] rounded-full text-white mr-4"
         >
           <FaChevronLeft />
