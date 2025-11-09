@@ -129,7 +129,7 @@ const CartPage = () => {
       image: ShreeAnnaAbhiyanLogo,
       order_id: order.id,
       handler: async function (response) {
-        const body = { ...response, cartItems, userId: userInfo?.user?._id, totalPrice: total };
+        const body = { ...response, cartItems, userId: userInfo?.user?._id, email: userInfo?.user?.email, name: userInfo?.user?.name, totalPrice: total };
         const validateRes = await fetch(`${API_URL}/order/validate`, {
           method: 'POST', body: JSON.stringify(body), headers: { "Content-Type": "application/json" },
         });
@@ -145,6 +145,7 @@ const CartPage = () => {
       prefill: { name: userInfo?.user?.name, email: userInfo?.user?.email, contact: "9000090000" },
       theme: { color: "#DE6B18" },
     };
+    console.log(options);
 
     const rzp1 = new window.Razorpay(options);
     rzp1.on('payment.failed', (response) => alert(response.error.description));

@@ -251,7 +251,8 @@ const HomePage = () => {
                   >
                     My Profile
                   </li>
-                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer transition-all">
+                  <li className="px-4 py-2 hover:bg-white/50 cursor-pointer transition-all"
+                    onClick={() => navigate("/orders")}>
                     Previous Orders
                   </li>
                   <li

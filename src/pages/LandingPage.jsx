@@ -11,7 +11,7 @@ const LandingPage = () => {
   };
 
   return (
-    <main className="relative h-screen w-full bg-[var(--background-color)] overflow-hidden">
+    <main className="relative h-fit w-full bg-[var(--background-color)] overflow-hidden">
       <div
         className="absolute top-0 left-0 w-full h-[50vh] bg-[var(--tertiary-color)]"
         style={{ clipPath: "ellipse(130% 100% at 50% 0%)" }}

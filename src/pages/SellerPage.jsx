@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from '../components/seller/Sidebar';
-import { FaBell } from "react-icons/fa";
-import { FiChevronDown } from "react-icons/fi";
+import { FiLogOut } from "react-icons/fi";
 import Cookies from 'js-cookie';
 import ParseJwt from '../utils/ParseJWT';
-import { CgProfile } from "react-icons/cg";
 
 const SellerPage = () => {
     const navigate = useNavigate();
@@ -21,19 +19,24 @@ const SellerPage = () => {
             navigate(location.pathname, { replace: true });
         }
         const token = Cookies.get('token');
-            if (token) {
-              try {
+        if (token) {
+            try {
                 const decoded = ParseJwt(token);
                 setUserInfo(decoded);
                 console.log('Decoded user info:', decoded);
-              } catch (error) {
+            } catch (error) {
                 console.error('Error decoding token:', error);
-              }
-            } else {
-              // Redirect to login if no token found
-              navigate('/login');
             }
+        } else {
+            // Redirect to login if no token found
+            navigate('/login');
+        }
     }, [location, navigate]);
+
+    const handleLogout = () => {
+        Cookies.remove('token');
+        navigate('/login');
+    };
 
     return (
         <div className="flex min-h-screen bg-background">
@@ -42,22 +45,25 @@ const SellerPage = () => {
                 <header className="flex justify-between items-center mb-8">
                     <div>
                         <h2 className="text-3xl font-bold text-text-dark">Welcome, {userInfo?.user?.name} 👋</h2>
-                        <p className="text-text-light">Today is Saturday, 11th November 2022.</p>
+                        <p className="text-text-light">
+                            Today is {new Date().toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric'
+                            })}.
+                        </p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <FaBell className="text-2xl text-text-light cursor-pointer" />
-                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                            <CgProfile className="w-8 h-8 text-text-light" />
-                        </div>
-
-                        <div>
-                            <p className="font-bold text-text-dark">Otor John</p>
-                            <p className="text-sm text-text-light">HR Office</p>
-                        </div>
-                        <FiChevronDown className="text-xl text-text-light cursor-pointer" />
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm"
+                        >
+                            <FiLogOut className="text-lg" />
+                            <span>Logout</span>
+                        </button>
                     </div>
                 </header>
-
                 {/* Dynamic Content Area */}
                 <div className="w-full">
                     {/* React Router will render the matching child route component here */}

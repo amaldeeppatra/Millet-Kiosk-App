@@ -5,7 +5,7 @@ import Skeleton from '@mui/material/Skeleton';
 
 // --- ICONS & COMPONENTS---
 import { FiChevronLeft, FiSearch } from 'react-icons/fi';
-import CartPane from '../components/homepage/CartPane'; 
+import CartPane from '../components/homepage/CartPane';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -22,8 +22,8 @@ const ProductCard = ({ item, onAddToCart, type = 'more' }) => {
                     alt={item.prodName}
                     className="w-full h-full object-cover rounded-2xl shadow-md"
                 />
-                
-                <button 
+
+                <button
                     onClick={() => onAddToCart(item)}
                     className="absolute top-[-12px] right-[-12px] w-10 h-10 bg-white text-[var(--tertiary-color)] rounded-full flex items-center justify-center shadow-lg border-[4px] border-[var(--tertiary-color)] text-4xl font-light"
                 >
@@ -31,7 +31,7 @@ const ProductCard = ({ item, onAddToCart, type = 'more' }) => {
                 </button>
 
                 {isMatchType && (
-                    <button 
+                    <button
                         onClick={() => navigate(`/product/${item.prodId}`)}
                         className="absolute bottom-2 right-2 w-6 h-6 bg-white text-black rounded-full flex items-center justify-center shadow-lg font-bold text-sm"
                     >
@@ -39,7 +39,7 @@ const ProductCard = ({ item, onAddToCart, type = 'more' }) => {
                     </button>
                 )}
             </div>
-            
+
             <div className="mt-2 w-[130px]">
                 <h3 className="text-[var(--tertiary-color)] text-base font-bold truncate">{item.prodName}</h3>
                 {/* --- FIX APPLIED HERE: The calorie <p> tag has been completely removed --- */}
@@ -55,7 +55,7 @@ const SearchResultsPage = () => {
 
     // --- STATE MANAGEMENT ---
     const [searchTerm, setSearchTerm] = useState(query);
-    const [results, setResults] = useState([]); 
+    const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [cartItems, setCartItems] = useState([]);
@@ -79,26 +79,33 @@ const SearchResultsPage = () => {
     const handleAddToCart = (product) => {
         const productId = product.prodId;
         setCartItems((prevItems) => {
-          const existing = prevItems.find(item => item.prodId === productId);
-          if (existing) {
-            return prevItems.map(item =>
-              item.prodId === productId
-                ? { ...item, quantity: item.quantity + 1 }
-                : item
-            );
-          } else {
-            const newItem = {
-              prodId: product.prodId,
-              prodImg: product.prodImg,
-              prodName: product.prodName,
-              price: product.price,
-              quantity: 1,
-            };
-            return [...prevItems, newItem];
-          }
+            const existing = prevItems.find(item => item.prodId === productId);
+            if (existing) {
+                return prevItems.map(item =>
+                    item.prodId === productId
+                        ? { ...item, quantity: item.quantity + 1 }
+                        : item
+                );
+            } else {
+                const parsePrice = (price) => {
+                    if (price && typeof price === "object" && "$numberDecimal" in price) {
+                        return parseFloat(price.$numberDecimal);
+                    }
+                    return parseFloat(price) || 0;
+                };
+
+                const newItem = {
+                    prodId: product.prodId,
+                    prodImg: product.prodImg,
+                    prodName: product.prodName,
+                    price: parsePrice(product.price),
+                    quantity: 1,
+                };
+                return [...prevItems, newItem];
+            }
         });
     };
-    
+
     const handleIncrease = (product) => {
         const productId = getProductId(product);
         setCartItems((prevItems) => prevItems.map(item => getProductId(item) === productId ? { ...item, quantity: item.quantity + 1 } : item));
@@ -170,20 +177,20 @@ const SearchResultsPage = () => {
                 </button>
                 <div className="relative flex-grow">
                     <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input 
-                        type="text" 
-                        value={searchTerm} 
-                        onChange={(e) => setSearchTerm(e.target.value)} 
-                        onKeyDown={handleKeyDown} 
-                        className="w-full bg-white rounded-full py-3 pl-12 pr-4 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]" 
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="w-full bg-white rounded-full py-3 pl-12 pr-4 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
                     />
                 </div>
             </header>
 
             {/* Main Content */}
             <main className="px-4 pb-32">
-                {loading && ( <div> {/* Your Main Skeleton Code Here */} </div> )}
-                {error && ( <div className="text-center py-10">Error: {error}</div> )}
+                {loading && (<div> {/* Your Main Skeleton Code Here */} </div>)}
+                {error && (<div className="text-center py-10">Error: {error}</div>)}
 
                 {!loading && !error && (
                     <>
