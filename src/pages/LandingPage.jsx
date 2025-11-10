@@ -1,9 +1,30 @@
-import React from "react";
-import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import { useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie';
+import ParseJwt from '../utils/ParseJWT';
 import logo from "../resources/logos/shreeannayojana.png";
 
 const LandingPage = () => {
   const navigate = useNavigate(); // 2. Initialize the navigate function
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (token) {
+      try {
+        const user = ParseJwt(token);
+        // Optional: check expiry
+        if (user) {
+          navigate("/homepage"); // redirect instantly
+          return;
+        } else {
+          Cookies.remove("token"); // expired token cleanup
+        }
+      } catch (error) {
+        console.error("Invalid token:", error);
+        Cookies.remove("token");
+      }
+    }
+  }, [navigate]);
 
   // 3. Create a function to handle the button click
   const handleContinue = () => {
