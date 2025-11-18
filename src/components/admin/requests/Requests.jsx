@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Requests() {
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -11,7 +14,6 @@ export default function Requests() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Fetch all requests on component mount
   useEffect(() => {
     fetchRequests();
   }, []);
@@ -19,24 +21,25 @@ export default function Requests() {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/request/getAllRequests', {
+      const response = await axios.get(`${API_URL}/request/getAllRequests`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        // Separate pending and completed requests
-        const pending = data.requests?.filter(req => req.status === 'pending') || [];
-        const history = data.requests?.filter(req => req.status === 'accepted' || req.status === 'rejected') || [];
-        setPendingRequests(pending);
-        setRequestHistory(history);
 
-        // Fetch seller details for all unique seller IDs
-        const sellerIds = [...new Set(data.requests?.map(req => req.sellerId))];
-        await fetchSellerDetails(sellerIds);
-      }
+      const data = response.data;
+
+      const pending = data.requests?.filter((req) => req.status === 'pending') || [];
+      const history =
+        data.requests?.filter(
+          (req) => req.status === 'accepted' || req.status === 'rejected'
+        ) || [];
+
+      setPendingRequests(pending);
+      setRequestHistory(history);
+
+      const sellerIds = [...new Set(data.requests?.map((req) => req.sellerId))];
+      await fetchSellerDetails(sellerIds);
     } catch (err) {
       console.error('Error fetching requests:', err);
     } finally {
@@ -48,15 +51,13 @@ export default function Requests() {
     try {
       const details = {};
       for (const sellerId of sellerIds) {
-        const response = await fetch(`/api/user/users/${sellerId}`, {
+        const response = await axios.get(`${API_URL}/user/users/${sellerId}`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         });
-        if (response.ok) {
-          const data = await response.json();
-          details[sellerId] = data.user;
-        }
+
+        details[sellerId] = response.data.user;
       }
       setSellerDetails(details);
     } catch (err) {
@@ -86,30 +87,23 @@ export default function Requests() {
     setSuccess('');
 
     try {
-      const response = await fetch(`/api/request/requests/${selectedRequest._id}/accept`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          quantity: selectedRequest.quantity
-        })
-      });
+      const response = await axios.patch(
+        `${API_URL}/request/requests/${selectedRequest._id}/accept`,
+        { quantity: selectedRequest.quantity },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Request accepted and stock updated successfully');
-        setTimeout(() => {
-          closeModal();
-          fetchRequests(); // Refresh the list
-        }, 1500);
-      } else {
-        setError(data.msg || data.message || 'Failed to accept request');
-      }
+      setSuccess('Request accepted and stock updated successfully');
+      setTimeout(() => {
+        closeModal();
+        fetchRequests();
+      }, 1500);
     } catch (err) {
-      setError('Error connecting to server');
+      setError(err.response?.data?.msg || err.response?.data?.message || 'Failed to accept request');
       console.error('Error accepting request:', err);
     } finally {
       setActionLoading(false);
@@ -124,27 +118,23 @@ export default function Requests() {
     setSuccess('');
 
     try {
-      const response = await fetch(`/api/request/requests/${selectedRequest._id}/reject`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const response = await axios.patch(
+        `${API_URL}/request/requests/${selectedRequest._id}/reject`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
         }
-      });
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Request rejected successfully');
-        setTimeout(() => {
-          closeModal();
-          fetchRequests(); // Refresh the list
-        }, 1500);
-      } else {
-        setError(data.msg || data.message || 'Failed to reject request');
-      }
+      setSuccess('Request rejected successfully');
+      setTimeout(() => {
+        closeModal();
+        fetchRequests();
+      }, 1500);
     } catch (err) {
-      setError('Error connecting to server');
+      setError(err.response?.data?.msg || err.response?.data?.message || 'Failed to reject request');
       console.error('Error rejecting request:', err);
     } finally {
       setActionLoading(false);
