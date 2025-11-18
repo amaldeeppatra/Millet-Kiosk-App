@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Sellers() {
   const [sellerInput, setSellerInput] = useState('');
@@ -9,23 +12,19 @@ export default function Sellers() {
   const [showModal, setShowModal] = useState(false);
   const [sellerToRemove, setSellerToRemove] = useState(null);
 
-  // Fetch all sellers on component mount
   useEffect(() => {
     fetchSellers();
   }, []);
 
   const fetchSellers = async () => {
     try {
-      const response = await fetch('/api/seller/sellers', {
+      const response = await axios.get(`${API_URL}/seller/sellers`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setSellers(data.sellers || []);
-      }
+
+      setSellers(response.data.sellers || []);
     } catch (err) {
       console.error('Error fetching sellers:', err);
     }
@@ -42,30 +41,58 @@ export default function Sellers() {
     setSuccess('');
 
     try {
-      const response = await fetch('/api/seller/manage', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
+      const response = await axios.patch(
+        `${API_URL}/seller/manage`,
+        {
           email: sellerInput.trim(),
-          action: 'add'
-        })
-      });
+          action: 'add',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess(data.message || 'Seller added successfully');
-        setSellerInput('');
-        fetchSellers(); // Refresh the list
-      } else {
-        setError(data.message || 'Failed to add seller');
-      }
+      setSuccess(response.data.message || 'Seller added successfully');
+      setSellerInput('');
+      fetchSellers();
     } catch (err) {
-      setError('Error connecting to server');
+      setError(err.response?.data?.message || 'Failed to add seller');
       console.error('Error adding seller:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmRemoveSeller = async () => {
+    if (!sellerToRemove) return;
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await axios.patch(
+        `${API_URL}/seller/manage`,
+        {
+          email: sellerToRemove.email,
+          action: 'remove',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      setSuccess(response.data.message || 'Seller removed successfully');
+      fetchSellers();
+      closeModal();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to remove seller');
+      console.error('Error removing seller:', err);
+      closeModal();
     } finally {
       setLoading(false);
     }
@@ -79,45 +106,6 @@ export default function Sellers() {
   const closeModal = () => {
     setShowModal(false);
     setSellerToRemove(null);
-  };
-
-  const confirmRemoveSeller = async () => {
-    if (!sellerToRemove) return;
-
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const response = await fetch('/api/seller/manage', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          email: sellerToRemove.email,
-          action: 'remove'
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess(data.message || 'Seller removed successfully');
-        fetchSellers(); // Refresh the list
-        closeModal();
-      } else {
-        setError(data.message || 'Failed to remove seller');
-        closeModal();
-      }
-    } catch (err) {
-      setError('Error connecting to server');
-      console.error('Error removing seller:', err);
-      closeModal();
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleKeyPress = (e) => {
