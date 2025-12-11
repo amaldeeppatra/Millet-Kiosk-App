@@ -6,6 +6,7 @@ import Cookies from 'js-cookie';
 import ParseJwt from '../utils/ParseJWT';
 import axios from 'axios';
 import Footer from '../components/footer/Footer';
+import { checkStock } from '../utils/inventoryCheck';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -59,12 +60,21 @@ const CartPage = () => {
 
   const getProductId = (product) => product._id || product.prodId;
 
-  const handleIncrease = (product) => {
-    const productId = getProductId(product);
-    setCartItems((prevItems) =>
-      prevItems.map(item =>
-        getProductId(item) === productId 
-          ? { ...item, quantity: item.quantity + 1 } 
+  const handleIncrease = async (product) => {
+    const stock = await checkStock(product.prodId);
+    if (stock === null) return;
+
+    const currentQty = cartItems.find(i => i.prodId === product.prodId)?.quantity || 0;
+
+    if (currentQty + 1 > stock) {
+      alert(`Not enough stock for ${product.prodName} in this shop.`);
+      return;
+    }
+
+    setCartItems(prev =>
+      prev.map(item =>
+        item.prodId === product.prodId
+          ? { ...item, quantity: item.quantity + 1 }
           : item
       )
     );
@@ -75,14 +85,14 @@ const CartPage = () => {
     setCartItems((prevItems) =>
       prevItems
         .map(item =>
-          getProductId(item) === productId 
-            ? { ...item, quantity: Math.max(0, item.quantity - 1) } 
+          getProductId(item) === productId
+            ? { ...item, quantity: Math.max(0, item.quantity - 1) }
             : item
         )
         .filter(item => item.quantity > 0)
     );
   };
-  
+
   const addSuggestedItem = (item) => {
     const productId = getProductId(item);
     setCartItems(items => {
@@ -111,9 +121,16 @@ const CartPage = () => {
 
   const paymentHandler = async (e) => {
     e.preventDefault();
+
+    const selectedShop = localStorage.getItem("selectedShop");
+    if (!selectedShop) {
+      alert("Please select a shop before placing an order!");
+      return;
+    }
+
     const amount = total * 100;
 
-    const response = await fetch(`${API_URL}/order`, {
+    const response = await fetch(`${API_URL}/order/${selectedShop}`, {
       method: 'POST',
       body: JSON.stringify({ amount, currency: 'INR', receipt: 'qwsaq1' }),
       headers: { 'Content-Type': 'application/json' },
@@ -127,19 +144,19 @@ const CartPage = () => {
       name: "Shree Anna Abhiyan",
       description: "Millet Product Transaction",
       image: ShreeAnnaAbhiyanLogo,
-      order_id: order.id,
+      order_id: order.order.id,
       handler: async function (response) {
         const body = { ...response, cartItems, userId: userInfo?.user?._id, email: userInfo?.user?.email, name: userInfo?.user?.name, totalPrice: total };
-        const validateRes = await fetch(`${API_URL}/order/validate`, {
+        const validateRes = await fetch(`${API_URL}/order/validate/${selectedShop}`, {
           method: 'POST', body: JSON.stringify(body), headers: { "Content-Type": "application/json" },
         });
         const jsonRes = await validateRes.json();
         if (jsonRes.message === 'success') {
-          await fetch(`${API_URL}/order/update-inventory`, {
-            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cartItems }),
-          });
+          // await fetch(`${API_URL}/order/update-inventory`, {
+          //   method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cartItems }),
+          // });
           clearCart();
-          navigate('/order-success', { state: { orderId: jsonRes.orderId } });
+          navigate('/order-success', { state: { orderNo: jsonRes.orderNo } });
         } else { console.error("Payment validation failed!"); }
       },
       prefill: { name: userInfo?.user?.name, email: userInfo?.user?.email, contact: "9000090000" },
@@ -222,7 +239,7 @@ const CartPage = () => {
                 randomSuggestions.map(item => (
                   <div key={getProductId(item)} className="w-24 text-center">
                     <div className="relative mb-1">
-                      <img src={item.prodImg} alt={item.prodName} className="w-24 h-24 rounded-2xl object-cover shadow-md"/>
+                      <img src={item.prodImg} alt={item.prodName} className="w-24 h-24 rounded-2xl object-cover shadow-md" />
                       <button onClick={() => addSuggestedItem(item)} className="absolute top-0 right-0 w-7 h-7 bg-[#291C08] text-white rounded-full flex items-center justify-center text-lg font-bold shadow-lg border-2 border-white">+</button>
                     </div>
                     <p className="font-semibold text-sm text-[#291C08] truncate">{item.prodName}</p>

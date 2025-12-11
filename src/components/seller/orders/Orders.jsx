@@ -191,12 +191,14 @@ const Orders = () => {
         },
     ], []);
 
+    const shopId = localStorage.getItem('selectedShop');
+    
     const fetchOrders = useCallback(async () => { 
         setLoading(true); 
         setError(null); 
         try { 
             const endpoint = tabEndpointMap[activeTab]; 
-            const response = await axios.get(`${API_URL}${endpoint}`); 
+            const response = await axios.get(`${API_URL}${endpoint}/${shopId}`); 
             const ordersData = response.data.orders || response.data || []; 
             setOrders(ordersData); 
         } catch (err) { 
@@ -211,7 +213,7 @@ const Orders = () => {
 
     const handleAccept = async (orderId) => { 
         try { 
-            await axios.patch(`${API_URL}/order/complete/${orderId}`); 
+            await axios.patch(`${API_URL}/order/complete/${shopId}/${orderId}`); 
             fetchOrders(); 
         } catch (err) { 
             console.error(`Error accepting order ${orderId}:`, err); 

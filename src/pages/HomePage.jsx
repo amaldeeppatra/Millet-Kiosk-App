@@ -12,6 +12,10 @@ import Footer from '../components/footer/Footer';
 import CartPane from '../components/homepage/CartPane';
 import MissionShaktiCard from '../components/homepage/MissionShaktiCard';
 import { AiOutlineClose } from 'react-icons/ai';
+import ShopLocationSelector from '../components/homepage/ShopLocationSelector';
+import { checkStock } from '../utils/inventoryCheck';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -116,37 +120,87 @@ const HomePage = () => {
     return () => clearInterval(interval);
   }, [slides.length]);
 
-  // Utility functions for cart operations
+  useEffect(() => {
+    const validateCart = async () => {
+      const shopId = localStorage.getItem("selectedShop");
+      if (!shopId) return;
+
+      const updatedCart = [];
+
+      for (const item of cartItems) {
+        try {
+          const res = await axios.get(`${API_URL}/inventory/${shopId}/product/${item.prodId}`);
+          const stock = res?.data?.stock ?? 0;
+
+          if (stock >= item.quantity) {
+            updatedCart.push(item);
+          } else if (stock > 0) {
+            updatedCart.push({ ...item, quantity: stock });
+            alert(`${item.prodName} stock reduced to ${stock} for this shop`);
+          } else {
+            alert(`${item.prodName} is not available in this shop`);
+          }
+        } catch {
+          alert(`${item.prodName} is not available in this shop`);
+        }
+      }
+
+      setCartItems(updatedCart);
+    };
+
+    if (cartItems.length > 0) validateCart();
+  }, [localStorage.getItem("selectedShop")]);
+
   const getProductId = (product) => product._id || product.prodId;
 
-  const handleAddToCart = (product) => {
-    const productId = product.prodId;
+  const handleAddToCart = async (product) => {
+    const stock = await checkStock(product.prodId);
+    if (stock === null) return;
+
+    const existingItem = cartItems.find(item => item.prodId === product.prodId);
+    const newQty = existingItem ? existingItem.quantity + 1 : 1;
+
+    if (newQty > stock) {
+      alert(`Not enough stock for ${product.prodName} in this shop.`);
+      return;
+    }
+
     setCartItems((prevItems) => {
-      const existing = prevItems.find(item => item.prodId === productId);
-      if (existing) {
+      if (existingItem) {
         return prevItems.map(item =>
-          item.prodId === productId
-            ? { ...item, quantity: item.quantity + 1 }
+          item.prodId === product.prodId
+            ? { ...item, quantity: newQty }
             : item
         );
       } else {
-        const newItem = {
-          prodId: product.prodId,
-          prodImg: product.prodImg,
-          prodName: product.prodName,
-          price: product.price,
-          quantity: 1,
-        };
-        return [...prevItems, newItem];
+        return [
+          ...prevItems,
+          {
+            prodId: product.prodId,
+            prodImg: product.prodImg,
+            prodName: product.prodName,
+            price: product.price,
+            quantity: 1,
+          }
+        ];
       }
     });
   };
 
-  const handleIncrease = (product) => {
-    const productId = getProductId(product);
-    setCartItems((prevItems) =>
-      prevItems.map(item =>
-        getProductId(item) === productId
+  const handleIncrease = async (product) => {
+    const stock = await checkStock(product.prodId);
+    if (stock === null) return;
+
+    const currentQty = cartItems.find(i => i.prodId === product.prodId)?.quantity || 0;
+
+    if (currentQty + 1 > stock) {
+      alert(`Not enough stock for ${product.prodName} in this shop.`);
+      return;
+    }
+
+    setCartItems(prev =>
+      prev.map(item =>
+        item.prodId === product.prodId
           ? { ...item, quantity: item.quantity + 1 }
           : item
       )
@@ -206,6 +260,7 @@ const HomePage = () => {
 
   const handleLogout = () => {
     Cookies.remove('token');
+    localStorage.removeItem("selectedShop");
     navigate('/login');
   };
 
@@ -376,6 +431,8 @@ const HomePage = () => {
           </p>
         </div>
       </div>
+
+      <ShopLocationSelector />
 
       {/* Offers Scrollable Carousel */}
       <div className="mt-10 px-4">

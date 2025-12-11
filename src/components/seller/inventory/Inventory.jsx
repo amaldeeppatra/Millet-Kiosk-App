@@ -42,7 +42,7 @@ const Inventory = () => {
     const [sellerId, setSellerId] = useState(null);
     const [quantity, setQuantity] = useState({});
     const [requestStatus, setRequestStatus] = useState({});
-    
+
     // Filter states
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [filters, setFilters] = useState({
@@ -70,16 +70,35 @@ const Inventory = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`${API_URL}/products`);
-            const productsData = response.data.products || response.data || [];
-            setProducts(productsData);
+            const shopId = localStorage.getItem("selectedShop");
+            if (!shopId) {
+                setError("Please select a shop first");
+                setLoading(false);
+                return;
+            }
+            const response = await axios.get(`${API_URL}/inventory/${shopId}/all`);
+            const inventoryData = response.data;
+            const mapped = inventoryData.map(item => ({
+                ...item,
+                prodId: item.productId?.prodId,
+                prodName: item.productId?.prodName,
+                prodImg: item.productId?.prodImg,
+                category: item.productId?.category,
+                price: item.productId?.price?.$numberDecimal
+                    ? Number(item.productId.price.$numberDecimal)
+                    : item.productId?.price,
+                stock: item.onHand,
+            }));
+
+            setProducts(mapped);
         } catch (err) {
-            console.error("Failed to fetch products:", err);
+            console.error("Failed to fetch inventory:", err);
             setError("Could not load inventory data. Please try again.");
         } finally {
             setLoading(false);
         }
     }, []);
+
 
     useEffect(() => {
         fetchProducts();
@@ -107,6 +126,7 @@ const Inventory = () => {
     }, []);
 
     const sendRequest = async (prodId) => {
+        const shopId = localStorage.getItem("selectedShop");
         try {
             setRequestStatus(prev => ({
                 ...prev,
@@ -115,10 +135,11 @@ const Inventory = () => {
 
             const response = await axios.post(`${API_URL}/request/${sellerId}`, {
                 prodId,
+                shopId,
                 message: message[prodId] || '',
                 quantity: parseInt(quantity[prodId]) || 1
             });
-            
+
             setRequestStatus(prev => ({
                 ...prev,
                 [prodId]: 'sent'
@@ -135,12 +156,12 @@ const Inventory = () => {
 
         } catch (error) {
             console.error("Error sending request:", error);
-            
+
             setRequestStatus(prev => ({
                 ...prev,
                 [prodId]: 'error'
             }));
-            
+
             setTimeout(() => {
                 setRequestStatus(prev => ({
                     ...prev,
@@ -198,10 +219,10 @@ const Inventory = () => {
     };
 
     const hasActiveFilters = () => {
-        return filters.selectedCategories.length > 0 || 
-               filters.selectedStatuses.length > 0 || 
-               filters.stockMin || 
-               filters.stockMax;
+        return filters.selectedCategories.length > 0 ||
+            filters.selectedStatuses.length > 0 ||
+            filters.stockMin ||
+            filters.stockMax;
     };
 
     // Apply filters to products
@@ -235,10 +256,10 @@ const Inventory = () => {
     const handleExport = () => {
         // Get the filtered and sorted products
         let exportData = [...products];
-        
+
         // Apply filters
         exportData = applyFilters(exportData);
-        
+
         // Apply search
         if (searchTerm) {
             const lowercasedFilter = searchTerm.toLowerCase();
@@ -277,7 +298,7 @@ const Inventory = () => {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
-        
+
         link.setAttribute('href', url);
         link.setAttribute('download', `inventory_export_${new Date().toISOString().split('T')[0]}.csv`);
         link.style.visibility = 'hidden';
@@ -360,26 +381,25 @@ const Inventory = () => {
             width: '15%',
             render: (row) => (
                 <div className="flex items-center gap-2">
-                    <button 
-                        className={`px-4 py-2 rounded-md transition-colors ${
-                            requestStatus[row.prodId] === 'sent' 
-                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed' 
+                    <button
+                        className={`px-4 py-2 rounded-md transition-colors ${requestStatus[row.prodId] === 'sent'
+                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
                                 : requestStatus[row.prodId] === 'sending'
-                                ? 'bg-blue-300 text-blue-800 cursor-wait'
-                                : requestStatus[row.prodId] === 'error'
-                                ? 'bg-red-300 text-red-800'
-                                : 'bg-accent hover:bg-secondary'
-                        }`}
+                                    ? 'bg-blue-300 text-blue-800 cursor-wait'
+                                    : requestStatus[row.prodId] === 'error'
+                                        ? 'bg-red-300 text-red-800'
+                                        : 'bg-accent hover:bg-secondary'
+                            }`}
                         onClick={() => sendRequest(row.prodId)}
                         disabled={requestStatus[row.prodId] === 'sent' || requestStatus[row.prodId] === 'sending'}
                     >
-                        {requestStatus[row.prodId] === 'sent' 
-                            ? 'Request Sent' 
+                        {requestStatus[row.prodId] === 'sent'
+                            ? 'Request Sent'
                             : requestStatus[row.prodId] === 'sending'
-                            ? 'Sending...'
-                            : requestStatus[row.prodId] === 'error'
-                            ? 'Failed - Retry'
-                            : 'Send Request'}
+                                ? 'Sending...'
+                                : requestStatus[row.prodId] === 'error'
+                                    ? 'Failed - Retry'
+                                    : 'Send Request'}
                     </button>
                 </div>
             ),
@@ -388,10 +408,10 @@ const Inventory = () => {
 
     const processedData = useMemo(() => {
         let filteredItems = [...products];
-        
+
         // Apply filters first
         filteredItems = applyFilters(filteredItems);
-        
+
         // Filter by search term
         if (searchTerm) {
             const lowercasedFilter = searchTerm.toLowerCase();
@@ -401,7 +421,7 @@ const Inventory = () => {
                 (p.prodId?.toLowerCase().includes(lowercasedFilter))
             );
         }
-        
+
         // Sort items
         if (sortConfig.key) {
             filteredItems.sort((a, b) => {
@@ -412,7 +432,7 @@ const Inventory = () => {
                 return 0;
             });
         }
-        
+
         return filteredItems;
     }, [products, searchTerm, sortConfig, filters]);
 
@@ -434,7 +454,7 @@ const Inventory = () => {
             <div>
                 <h1 className="text-3xl font-bold text-text-dark mt-1">Inventory</h1>
             </div>
-            
+
             <div className="flex justify-between items-center">
                 <div className="relative w-1/3">
                     <FiSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
@@ -447,11 +467,11 @@ const Inventory = () => {
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <button 
+                    <button
                         onClick={() => setShowFilterPanel(!showFilterPanel)}
                         className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-semibold hover:bg-gray-50 ${hasActiveFilters() ? 'bg-blue-50 border-blue-500 text-blue-700' : ''}`}
                     >
-                        <FiFilter /> 
+                        <FiFilter />
                         Filter
                         {hasActiveFilters() && (
                             <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -463,7 +483,7 @@ const Inventory = () => {
                             </span>
                         )}
                     </button>
-                    <button 
+                    <button
                         onClick={handleExport}
                         className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50"
                     >
@@ -479,7 +499,7 @@ const Inventory = () => {
                         <h3 className="text-lg font-semibold text-gray-800">Filters</h3>
                         <div className="flex gap-2">
                             {hasActiveFilters() && (
-                                <button 
+                                <button
                                     onClick={clearFilters}
                                     className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                                 >

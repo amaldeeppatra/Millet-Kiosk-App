@@ -12,7 +12,7 @@ const CreateProductForm = () => {
         prodDesc: '',
         category: '',
         price: '',
-        stock: '',
+        // stock: '',
         ingredients: '',
         nutritionalValue: '',
     });
@@ -36,7 +36,7 @@ const CreateProductForm = () => {
         if (!formData.prodImg) newErrors.prodImg = 'Product Image URL is required.';
         if (!formData.prodDesc) newErrors.prodDesc = 'Product Description is required.';
         if (!formData.price) newErrors.price = 'Price is required.';
-        if (!formData.stock) newErrors.stock = 'Stock Quantity is required.';
+        // if (!formData.stock) newErrors.stock = 'Stock Quantity is required.';
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -50,7 +50,8 @@ const CreateProductForm = () => {
         try {
             const response = await axios.post(`${API_URL}/product/new`, payload);
             setServerMessage({ type: 'success', content: `Product "${response.data.prodName}" created successfully!` });
-            setFormData({ prodId: '', prodName: '', prodImg: '', prodDesc: '', category: '', price: '', stock: '', ingredients: '', nutritionalValue: '' });
+            // setFormData({ prodId: '', prodName: '', prodImg: '', prodDesc: '', category: '', price: '', stock: '', ingredients: '', nutritionalValue: '' });
+            setFormData({ prodId: '', prodName: '', prodImg: '', prodDesc: '', category: '', price: '', ingredients: '', nutritionalValue: '' });
             setErrors({});
         } catch (error) {
             const message = error.response?.data?.message || "An error occurred. Please try again.";
@@ -99,6 +100,7 @@ const CreateProductForm = () => {
                         <label htmlFor="category" className="block text-sm font-medium text-text-dark mb-1">Select Category</label>
                         <select id="category" value={formData.category} onChange={handleChange} className={inputClass}>
                             <option value="">Select Category</option>
+                            <option value="Millet">Millet</option>
                             <option value="Snacks">Snacks</option>
                             <option value="Beverages">Beverages</option>
                             <option value="Fast Food">Fast Food</option>
@@ -114,11 +116,11 @@ const CreateProductForm = () => {
 
                 {/* Row 3: Reordered Stock/Price and Ingredients */}
                 <div className="flex flex-col space-y-6">
-                    <div>
+                    {/* <div>
                         <label htmlFor="stock" className="block text-sm font-medium text-text-dark mb-1">Stock Quantity*</label>
                         <input type="number" id="stock" value={formData.stock} onChange={handleChange} className={errors.stock ? errorInputClass : inputClass} placeholder="0" />
                         {errors.stock && <p className="text-red-500 text-xs mt-1">{errors.stock}</p>}
-                    </div>
+                    </div> */}
                     <div>
                         <label htmlFor="price" className="block text-sm font-medium text-text-dark mb-1">Price*</label>
                         <input type="number" id="price" value={formData.price} onChange={handleChange} className={errors.price ? errorInputClass : inputClass} placeholder="0.00" step="0.01" />

@@ -105,7 +105,7 @@ const appRouter = createBrowserRouter(
           )
         },
         {
-          path: "/order/:orderId",
+          path: "/order/:shopId/:orderNo",
           element: (
             <OrderDetails />
           )

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { AiOutlinePlus } from "react-icons/ai";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { checkStock } from '../../utils/inventoryCheck';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const ProductsByCat = ({ title, cat, onAddToCart }) => {
@@ -56,12 +57,45 @@ const ProductsByCat = ({ title, cat, onAddToCart }) => {
                 />
                 <button
                   className="absolute -top-[5px] -right-[5px] bg-background text-tertiary text-3xl rounded-full border-4 border-tertiary w-7 h-7 flex items-center justify-center pointer-events-auto"
-                  onClick={(e) => {
-                    e.stopPropagation(); // stop card click
-                    onAddToCart(product);
+                  onClick={async (e) => {
+                    e.stopPropagation();
+
+                    const selectedShop = localStorage.getItem("selectedShop");
+                    if (!selectedShop) {
+                      alert("Please select a shop before adding items!");
+                      return;
+                    }
+
+                    // try {
+                      // const res = await axios.get(
+                      //   `${API_URL}/inventory/${selectedShop}/product/${product.prodId}`
+                      // );
+
+                      // const { stock } = res.data;
+
+                      // console.log("Available stock:", stock);
+
+                      const stock = await checkStock(product.prodId);
+                      if (stock === null) return;
+                      
+                      const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
+                      const cartItem = cartItems.find(i => i.prodId === product.prodId);
+                      const currentQty = cartItem ? cartItem.quantity : 0;
+
+                      if (stock < currentQty) {
+                        alert(`Not enough stock for ${product.prodName} in this shop.`);
+                        return;
+                      }
+
+                      onAddToCart(product);
+
+                    // } catch (err) {
+                      // console.error("Stock check failed:", err);
+                      // alert("Unable to verify stock right now!");
+                    // }
                   }}
                 >
-                  <AiOutlinePlus className='w-7 h-7'/>
+                  <AiOutlinePlus className='w-7 h-7' />
                 </button>
               </div>
               <p className="mt-2 text-center text-sm font-semibold text-tertiary">

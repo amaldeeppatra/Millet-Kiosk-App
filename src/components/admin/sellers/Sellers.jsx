@@ -5,6 +5,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Sellers() {
   const [sellerInput, setSellerInput] = useState('');
+  const [shopInput, setShopInput] = useState('');
+  const [shops, setShops] = useState([]);
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,14 +16,24 @@ export default function Sellers() {
 
   useEffect(() => {
     fetchSellers();
+    fetchShops();
   }, []);
+
+  const fetchShops = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/shop/all`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      setShops(res.data.shops || []);
+    } catch (err) {
+      console.error("Error fetching shops:", err);
+    }
+  };
 
   const fetchSellers = async () => {
     try {
       const response = await axios.get(`${API_URL}/seller/sellers`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
 
       setSellers(response.data.sellers || []);
@@ -31,10 +43,8 @@ export default function Sellers() {
   };
 
   const handleAddSeller = async () => {
-    if (!sellerInput.trim()) {
-      setError('Please enter a valid email');
-      return;
-    }
+    if (!sellerInput.trim()) return setError("Enter valid email");
+    if (!shopInput.trim()) return setError("Select a shop");
 
     setLoading(true);
     setError('');
@@ -45,21 +55,20 @@ export default function Sellers() {
         `${API_URL}/seller/manage`,
         {
           email: sellerInput.trim(),
-          action: 'add',
+          shopId: shopInput.trim(),
+          action: "add",
         },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         }
       );
 
       setSuccess(response.data.message || 'Seller added successfully');
-      setSellerInput('');
+      setSellerInput("");
+      setShopInput("");
       fetchSellers();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add seller');
-      console.error('Error adding seller:', err);
     } finally {
       setLoading(false);
     }
@@ -69,20 +78,19 @@ export default function Sellers() {
     if (!sellerToRemove) return;
 
     setLoading(true);
-    setError('');
     setSuccess('');
+    setError('');
 
     try {
       const response = await axios.patch(
         `${API_URL}/seller/manage`,
         {
           email: sellerToRemove.email,
+          shopId: sellerToRemove.shopId,
           action: 'remove',
         },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         }
       );
 
@@ -91,7 +99,6 @@ export default function Sellers() {
       closeModal();
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to remove seller');
-      console.error('Error removing seller:', err);
       closeModal();
     } finally {
       setLoading(false);
@@ -108,89 +115,82 @@ export default function Sellers() {
     setSellerToRemove(null);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleAddSeller();
-    }
-  };
-
   return (
     <div className="flex-1 p-8">
       <div className={`max-w-6xl ${showModal ? 'blur-sm' : ''}`}>
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Sellers</h1>
-        
-        {/* Error/Success Messages */}
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">
-            {success}
-          </div>
-        )}
+
+        {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4">{error}</div>}
+        {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4">{success}</div>}
 
         <div className='rounded-2xl border-2'>
           <div className="rounded-2xl p-8 mb-6">
             <h2 className="text-2xl font-semibold text-primary mb-6">Add New Seller</h2>
-            
+
+            {/* NEW — Shop Dropdown */}
+            <select
+              value={shopInput}
+              onChange={(e) => setShopInput(e.target.value)}
+              className="w-full mb-4 bg-accent rounded-xl p-4 text-gray-700 outline-none"
+              disabled={loading}
+            >
+              <option value="">Select Shop *</option>
+              {shops.map((shop) => (
+                <option key={shop._id} value={shop._id}>{shop.name}</option>
+              ))}
+            </select>
+
             <div className="bg-accent rounded-xl p-6 mb-6">
               <input
                 type="email"
-                placeholder="Enter Seller ID or Email ID *"
+                placeholder="Enter Seller Email *"
                 value={sellerInput}
                 onChange={(e) => setSellerInput(e.target.value)}
-                onKeyPress={handleKeyPress}
                 disabled={loading}
                 className="w-full bg-transparent border-none outline-none text-gray-700 placeholder-gray-400 text-base"
               />
             </div>
-            
+
             <div className="flex justify-center">
               <button
                 onClick={handleAddSeller}
                 disabled={loading}
-                className="bg-primary hover:bg-primary-600 text-white font-medium px-8 py-3 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary text-white font-medium px-8 py-3 rounded-lg flex items-center gap-2 disabled:opacity-50"
               >
-                <span className="text-xl">+</span>
-                <span>{loading ? 'Adding...' : 'Add Seller'}</span>
+                <span className="text-xl">+</span> {loading ? "Adding..." : "Add Seller"}
               </button>
             </div>
           </div>
 
           <div className="rounded-2xl p-8">
             <h2 className="text-2xl font-semibold text-primary mb-6">Active Sellers</h2>
-            
+
             <div className="bg-accent rounded-xl p-6 min-h-[300px]">
               {sellers.length === 0 ? (
                 <div className="flex items-center justify-center h-64">
-                  <p className="text-gray-500 text-center">
-                    No active sellers right now, sowile.
-                  </p>
+                  <p className="text-gray-500">No active sellers right now, sowile.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {sellers.map((seller) => (
                     <div
-                      key={seller._id || seller.email}
-                      className="bg-white rounded-lg p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
+                      key={seller._id}
+                      className="bg-white rounded-lg p-4 flex justify-between shadow-sm"
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-semibold">
-                          {seller.name ? seller.name.charAt(0).toUpperCase() : seller.email.charAt(0).toUpperCase()}
+                          {seller.name?.charAt(0) || seller.email.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-800">
-                            {seller.name || 'Seller'}
-                          </p>
+                          <p className="font-medium text-gray-800">{seller.name || "Seller"}</p>
                           <p className="text-sm text-gray-500">{seller.email}</p>
+                          <p className="text-xs text-gray-500">Shop: {seller.shopId .name}</p>
                         </div>
                       </div>
                       <button
                         onClick={() => openRemoveModal(seller)}
                         disabled={loading}
-                        className="bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg"
                       >
                         Remove
                       </button>
@@ -203,7 +203,7 @@ export default function Sellers() {
         </div>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* MODAL remains unchanged */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop with blur */}
