@@ -4,11 +4,15 @@ import Sidebar from '../components/seller/Sidebar';
 import { FiLogOut } from "react-icons/fi";
 import Cookies from 'js-cookie';
 import ParseJwt from '../utils/ParseJWT';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const SellerPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [userInfo, setUserInfo] = useState(null);
+    const [shopName, setShopName] = useState('');
 
     // Extract token from query parameters and store it in cookies
     useEffect(() => {
@@ -35,8 +39,40 @@ const SellerPage = () => {
 
     const handleLogout = () => {
         Cookies.remove('token');
+        localStorage.removeItem("selectedShop");
         navigate('/login');
     };
+    useEffect(() => {
+        const token = Cookies.get("token");
+        if (!token) return;
+
+        try {
+            const decoded = ParseJwt(token);
+
+            const shopIdFromToken = decoded?.user?.shopId;   // <-- Extract shopId from token
+            if (shopIdFromToken) {
+                localStorage.setItem("selectedShop", shopIdFromToken);  // <-- Save persisted
+            }
+
+        } catch (err) {
+            console.error("Error parsing token:", err);
+        }
+    }, []);
+
+    useEffect(() => {
+        const shopId = localStorage.getItem("selectedShop");
+        if (!shopId) return;
+
+        const fetchShopDetails = async () => {
+            try {
+                const res = await axios.get(`${API_URL}/shop/${shopId}`);
+                setShopName(res.data.shop?.name || "Unknown Shop");
+            } catch (err) {
+                console.error("Error fetching shop details:", err);
+            }
+        };
+        fetchShopDetails();
+    }, []);
 
     return (
         <div className="flex min-h-screen bg-background">
@@ -53,6 +89,7 @@ const SellerPage = () => {
                                 year: 'numeric'
                             })}.
                         </p>
+                        <p>Shop Name: {shopName}</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <button

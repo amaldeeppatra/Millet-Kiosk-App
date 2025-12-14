@@ -245,7 +245,7 @@ const Restocks = () => {
             },
         },
         {
-            header: 'Order ID',
+            header: 'Request ID',
             key: 'requestId',
             width: '15%',
             isSortable: true,

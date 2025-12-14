@@ -43,6 +43,7 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       if (!userInfo?.user?._id) return;
+      console.log('Fetching orders for user ID:', userInfo.user._id);
       
       setOrdersLoading(true);
       try {
@@ -74,10 +75,8 @@ const MyProfile = () => {
   }, [userInfo, activeTab]);
 
   const handleLogout = () => {
-    // Clear cookies and local storage
     Cookies.remove('token');
-    
-    // Redirect to login page
+    localStorage.removeItem("selectedShop");
     navigate('/login');
   };
 
@@ -318,7 +317,7 @@ const MyProfile = () => {
                   <div 
                     key={order._id} 
                     className="bg-white/40 rounded-xl p-4 shadow-sm"
-                    onClick={() => navigate(`/order/${order.orderId}`)}
+                    onClick={() => navigate(`/order/${order.shopId}/${order.orderNo}`)}
                   >
                     <div className="flex justify-between items-center mb-2">
                       <h4 className="font-semibold">Order #{order.orderId}</h4>

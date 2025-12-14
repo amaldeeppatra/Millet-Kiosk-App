@@ -8,7 +8,8 @@ const API_BASE = import.meta.env.VITE_API_URL;
 // API service with actual endpoints
 const api = {
   getDashboardStats: async () => {
-    const response = await fetch(`${API_BASE}/analytics/dashboard`, {
+    const shopId = localStorage.getItem("selectedShop");
+    const response = await fetch(`${API_BASE}/analytics/dashboard?shopId=${shopId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`, // Add auth if needed
         'Content-Type': 'application/json'
@@ -19,7 +20,8 @@ const api = {
   },
   
   getRevenueTrend: async (days = 7) => {
-    const response = await fetch(`${API_BASE}/analytics/revenue-trend?days=${days}`, {
+    const shopId = localStorage.getItem("selectedShop");
+    const response = await fetch(`${API_BASE}/analytics/revenue-trend?days=${days}&shopId=${shopId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -30,7 +32,8 @@ const api = {
   },
   
   getBestSellingProducts: async (limit = 5) => {
-    const response = await fetch(`${API_BASE}/analytics/products/best-selling?limit=${limit}`, {
+    const shopId = localStorage.getItem("selectedShop");
+    const response = await fetch(`${API_BASE}/analytics/products/best-selling?limit=${limit}&shopId=${shopId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -41,7 +44,8 @@ const api = {
   },
   
   getLeastSellingProducts: async (limit = 5) => {
-    const response = await fetch(`${API_BASE}/analytics/products/least-selling?limit=${limit}`, {
+    const shopId = localStorage.getItem("selectedShop");
+    const response = await fetch(`${API_BASE}/analytics/products/least-selling?limit=${limit}&shopId=${shopId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -52,7 +56,8 @@ const api = {
   },
   
   getOperationalFunnel: async () => {
-    const response = await fetch(`${API_BASE}/analytics/operational-funnel`, {
+    const shopId = localStorage.getItem("selectedShop");
+    const response = await fetch(`${API_BASE}/analytics/operational-funnel?shopId=${shopId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
@@ -63,7 +68,8 @@ const api = {
   },
 
   getCategoryPerformance: async () => {
-    const response = await fetch(`${API_BASE}/analytics/products/category-performance`, {
+    const shopId = localStorage.getItem("selectedShop");
+    const response = await fetch(`${API_BASE}/analytics/products/category-performance?shopId=${shopId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'

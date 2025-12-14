@@ -6,6 +6,7 @@ import successAnimation from '../resources/animations/success-animation.json';
 import Skeleton from '@mui/material/Skeleton';
 import Cookies from 'js-cookie';
 import ParseJwt from '../utils/ParseJWT';
+import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -18,78 +19,96 @@ const OrderSuccess = () => {
   
   // Fetch order details
   useEffect(() => {
-    const fetchOrderDetails = async () => {
-      try {
-        // Get user info from token for authorization
-        const token = Cookies.get('token');
-        if (token) {
-          const decoded = ParseJwt(token);
-          setUserInfo(decoded);
-          
-          // Get orderId from Razorpay response (passed in location.state)
-          const orderId = location.state?.orderId;
-          
-          if (orderId) {
-            const response = await fetch(`${API_URL}/order/${orderId}`, {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            });
-            
-            if (response.ok) {
-              const data = await response.json();
-              const orderData = data.order; // Access the nested order object
-              
-              setOrderDetails({
-                // orderId: orderData.orderId,
-                orderNo: orderData.orderNo,
-                date: new Date(orderData.createdAt).toLocaleString(),
-                items: orderData.items.length,
-                total: parseFloat(orderData.totalPrice.$numberDecimal || orderData.totalPrice),
-                products: orderData.items
-              });
-            } else {
-              console.error('Failed to fetch order details');
-              // Fallback to local storage cart data if API fails
-              const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-              setOrderDetails({
-                orderId: 'N/A',
-                date: new Date().toLocaleString(),
-                items: cartItems.length,
-                total: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-                products: cartItems
-              });
+  const fetchOrderDetails = async () => {
+    try {
+      const token = Cookies.get("token");
+      if (!token) return;
+
+      const decoded = ParseJwt(token);
+      setUserInfo(decoded);
+
+      // Get orderNo passed from previous page
+      const orderNo = location.state?.orderNo;
+      const selectedShop = localStorage.getItem("selectedShop");
+
+      if (orderNo) {
+        try {
+          const response = await axios.get(
+            `${API_URL}/order/${selectedShop}/${orderNo}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
             }
-          } else {
-            // Fallback to local storage cart data if no orderId
-            const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-            setOrderDetails({
-              orderId: 'N/A',
-              date: new Date().toLocaleString(),
-              items: cartItems.length,
-              total: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-              products: cartItems
-            });
-          }
+          );
+
+          const orderData = response.data.order;
+
+          setOrderDetails({
+            orderNo: orderData.orderNo,
+            date: new Date(orderData.createdAt).toLocaleString(),
+            items: orderData.items.length,
+            total: parseFloat(
+              orderData.totalPrice?.$numberDecimal || orderData.totalPrice
+            ),
+            products: orderData.items,
+          });
+        } catch (err) {
+          console.error("Error fetching order by orderNo:", err);
+
+          // FALLBACK in case API fails
+          const cartItems =
+            JSON.parse(localStorage.getItem("cartItems")) || [];
+
+          setOrderDetails({
+            orderNo: "N/A",
+            date: new Date().toLocaleString(),
+            items: cartItems.length,
+            total: cartItems.reduce(
+              (sum, item) => sum + item.price * item.quantity,
+              0
+            ),
+            products: cartItems,
+          });
         }
-      } catch (error) {
-        console.error('Error fetching order details:', error);
-        // Fallback to local storage cart data if any error occurs
-        const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+      } else {
+        // If no orderNo available
+        const cartItems =
+          JSON.parse(localStorage.getItem("cartItems")) || [];
+
         setOrderDetails({
-          orderId: 'N/A',
+          orderNo: "N/A",
           date: new Date().toLocaleString(),
           items: cartItems.length,
-          total: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-          products: cartItems
+          total: cartItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+          ),
+          products: cartItems,
         });
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching order details:", error);
 
-    fetchOrderDetails();
-  }, [location]);
+      const cartItems =
+        JSON.parse(localStorage.getItem("cartItems")) || [];
+
+      setOrderDetails({
+        orderNo: "N/A",
+        date: new Date().toLocaleString(),
+        items: cartItems.length,
+        total: cartItems.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        ),
+        products: cartItems,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchOrderDetails();
+}, [location]);
+
 
   if (loading) {
     return (

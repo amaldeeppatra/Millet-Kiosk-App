@@ -6,6 +6,7 @@ import Skeleton from '@mui/material/Skeleton';
 // --- ICONS & COMPONENTS---
 import { FiChevronLeft, FiSearch } from 'react-icons/fi';
 import CartPane from '../components/homepage/CartPane';
+import { checkStock } from '../utils/inventoryCheck';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -76,8 +77,19 @@ const SearchResultsPage = () => {
 
     const getProductId = (product) => product._id || product.prodId;
 
-    const handleAddToCart = (product) => {
+    const handleAddToCart = async (product) => {
+        const stock = await checkStock(product.prodId);
+        if (stock === null) return;
         const productId = product.prodId;
+
+        const existingItem = cartItems.find(item => item.prodId === productId);
+        const newQty = existingItem ? existingItem.quantity + 1 : 1;
+
+        if (newQty > stock) {
+            alert(`Not enough stock for ${product.prodName} in this shop.`);
+            return;
+        }
+
         setCartItems((prevItems) => {
             const existing = prevItems.find(item => item.prodId === productId);
             if (existing) {
@@ -106,9 +118,24 @@ const SearchResultsPage = () => {
         });
     };
 
-    const handleIncrease = (product) => {
-        const productId = getProductId(product);
-        setCartItems((prevItems) => prevItems.map(item => getProductId(item) === productId ? { ...item, quantity: item.quantity + 1 } : item));
+    const handleIncrease = async (product) => {
+        const stock = await checkStock(product.prodId);
+        if (stock === null) return;
+
+        const currentQty = cartItems.find(i => i.prodId === product.prodId)?.quantity || 0;
+
+        if (currentQty + 1 > stock) {
+            alert(`Not enough stock for ${product.prodName} in this shop.`);
+            return;
+        }
+
+        setCartItems(prev =>
+            prev.map(item =>
+                item.prodId === product.prodId
+                    ? { ...item, quantity: item.quantity + 1 }
+                    : item
+            )
+        );
     };
     const handleDecrease = (product) => {
         const productId = getProductId(product);

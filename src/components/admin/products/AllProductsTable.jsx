@@ -143,10 +143,10 @@ const AllProductsTable = () => {
             header: 'Price', key: 'price', width: '10%', isSortable: true,
             render: (row) => editingRowId === row.prodId ? <input type="number" name="price" value={editedData.price || ''} onChange={handleInputChange} className={inputClass} /> : `₹${formatDecimal(row.price).toFixed(2)}`
         },
-        {
-            header: 'Stock', key: 'stock', width: '10%', isSortable: true,
-            render: (row) => editingRowId === row.prodId ? <input type="number" name="stock" value={editedData.stock || ''} onChange={handleInputChange} className={inputClass} /> : <span className={`px-3 py-1 rounded-full text-xs font-semibold ${row.stock < 10 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{row.stock}</span>
-        },
+        // {
+        //     header: 'Stock', key: 'stock', width: '10%', isSortable: true,
+        //     render: (row) => editingRowId === row.prodId ? <input type="number" name="stock" value={editedData.stock || ''} onChange={handleInputChange} className={inputClass} /> : <span className={`px-3 py-1 rounded-full text-xs font-semibold ${row.stock < 10 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>{row.stock}</span>
+        // },
         { header: 'Rating', key: 'rating', width: '10%', isSortable: true, render: (row) => <span className="flex items-center">{formatDecimal(row.rating).toFixed(1)} <span className="ml-1 text-yellow-500">★</span></span> },
         {
             header: 'Actions', key: 'actions', width: '10%',

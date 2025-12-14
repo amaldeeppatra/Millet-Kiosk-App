@@ -56,8 +56,9 @@ export default function Requests() {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-
-        details[sellerId] = response.data.user;
+        // console.log('Seller details response:', response);
+        details[sellerId] = response.data;
+        console.log('Fetched seller details:', details);
       }
       setSellerDetails(details);
     } catch (err) {
@@ -322,8 +323,8 @@ export default function Requests() {
                   </p>
                 </div>
                 <div className="bg-accent rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Seller ID</p>
-                  <p className="font-semibold text-gray-800">{selectedRequest.sellerId}</p>
+                  <p className="text-sm text-gray-600 mb-1">Shop Name</p>
+                  <p className="font-semibold text-gray-800">{selectedRequest.shopId?.name}</p>
                 </div>
               </div>
 

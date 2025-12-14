@@ -11,6 +11,7 @@ import { FiChevronLeft, FiArrowRight } from "react-icons/fi";
 import CartPane from "../components/homepage/CartPane";
 import nutritionImg from "../resources/productpage/nutrition facts.png";
 import Footer from "../components/footer/Footer";
+import { checkStock } from "../utils/inventoryCheck";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -31,34 +32,62 @@ const ProductPage = () => {
   const [allSuggestedItems, setAllSuggestedItems] = useState([]);
   const [randomSuggestions, setRandomSuggestions] = useState([]);
 
-  // --- FUNCTIONS (UNCHANGED) ---
   const getProductId = (p) => p._id || p.prodId;
 
-  const handleAddToCart = (productToAdd) => {
-    const id = getProductId(productToAdd);
+  const handleAddToCart = async (productToAdd) => {
+    const productId = getProductId(productToAdd);
+
+    const stock = await checkStock(productId);
+    if (stock === null) return; // No shop selected or fetch failed
+
+    const existingItem = cartItems.find(item => getProductId(item) === productId);
+    const newQty = existingItem ? existingItem.quantity + 1 : 1;
+
+    if (newQty > stock) {
+      alert(`Not enough stock for ${product.prodName} in this shop.`);
+      return;
+    }
+
     setCartItems((prevItems) => {
-      const existing = prevItems.find((item) => getProductId(item) === id);
-      if (existing) {
-        return prevItems.map((item) =>
-          getProductId(item) === id
-            ? { ...item, quantity: item.quantity + 1 }
+      if (existingItem) {
+        return prevItems.map(item =>
+          getProductId(item) === productId
+            ? { ...item, quantity: newQty }
             : item
         );
       }
       return [
         ...prevItems,
         {
-          prodId: id,
+          prodId: productId,
           prodImg: productToAdd.prodImg,
           prodName: productToAdd.prodName,
           price: productToAdd.price,
           quantity: 1,
-        },
+        }
       ];
     });
   };
 
-  const handleIncrease = (p) => setCartItems((prev) => prev.map((item) => getProductId(item) === getProductId(p) ? { ...item, quantity: item.quantity + 1 } : item));
+  const handleIncrease = async (product) => {
+      const stock = await checkStock(product.prodId);
+      if (stock === null) return;
+  
+      const currentQty = cartItems.find(i => i.prodId === product.prodId)?.quantity || 0;
+  
+      if (currentQty + 1 > stock) {
+        alert(`Not enough stock for ${product.prodName} in this shop.`);
+        return;
+      }
+  
+      setCartItems(prev =>
+        prev.map(item =>
+          item.prodId === product.prodId
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      );
+    };
   const handleDecrease = (p) => setCartItems((prev) => prev.map((item) => getProductId(item) === getProductId(p) ? { ...item, quantity: Math.max(0, item.quantity - 1) } : item).filter((item) => item.quantity > 0));
   const handleRemove = (p) => setCartItems((prev) => prev.filter((item) => getProductId(item) !== getProductId(p)));
 
@@ -76,7 +105,7 @@ const ProductPage = () => {
   const renderStarRating = () => (
     <div className="flex items-center justify-center space-x-2">
       {[1, 2, 3, 4, 5].map((star) => (
-        <FaStar key={star} size={32} className={`cursor-pointer transition-colors duration-200 ${ (hoveredRating || userRating) >= star ? "text-yellow-400" : "text-gray-300" }`} onMouseEnter={() => setHoveredRating(star)} onMouseLeave={() => setHoveredRating(0)} onClick={() => handleRating(star)} />
+        <FaStar key={star} size={32} className={`cursor-pointer transition-colors duration-200 ${(hoveredRating || userRating) >= star ? "text-yellow-400" : "text-gray-300"}`} onMouseEnter={() => setHoveredRating(star)} onMouseLeave={() => setHoveredRating(0)} onClick={() => handleRating(star)} />
       ))}
     </div>
   );
@@ -132,7 +161,7 @@ const ProductPage = () => {
     setRandomSuggestions(getRandomSuggestions());
     const interval = setInterval(() => {
       setRandomSuggestions(getRandomSuggestions());
-    }, 10000); 
+    }, 10000);
     return () => clearInterval(interval);
   }, [allSuggestedItems]);
 
@@ -159,7 +188,7 @@ const ProductPage = () => {
         {/* <button onClick={() => navigate(-1)} className="absolute top-5 left-4 z-20 p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-lg hover:bg-white transition-colors">
           <FiChevronLeft size={24} className="text-gray-800" />
         </button> */}
-        <button 
+        <button
           onClick={() => navigate(-1)}
           className="absolute top-4 left-4 p-2 bg-background bg-opacity-75 rounded-full shadow-md"
         >
@@ -231,7 +260,7 @@ const ProductPage = () => {
       </main>
 
       <CartPane cartItems={cartItems} onIncrease={handleIncrease} onDecrease={handleDecrease} onRemove={handleRemove} onCheckout={() => navigate("/cart")} />
-      
+
       <Footer />
     </div>
   );

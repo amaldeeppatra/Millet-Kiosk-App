@@ -85,7 +85,7 @@ const ViewOrders = () => {
               <div 
                 key={order._id} 
                 className="bg-white/40 rounded-xl p-4 shadow-sm"
-                onClick={() => navigate(`/order/${order.orderId}`)}
+                onClick={() => navigate(`/order/${order.shopId}/${order.orderNo}`)}
               >
                 <div className="flex justify-between items-center mb-2">
                   <h4 className="font-semibold">Order #{order.orderId}</h4>
